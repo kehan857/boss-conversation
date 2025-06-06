@@ -1,0 +1,95 @@
+{
+  "name": "首次对话不清空插件",
+  "version": "1.0",
+  "description": "在第一次对话时立即响应，但不清空消息历史和计数，只在达到条件阈值时才清空",
+  "type": "function",
+  "codeType": "js-plugin",
+  "author": "FastGPT用户",
+  "code": "function main({userChatInput, messageHistory, lastMessageTime, messageThreshold, messageCount, timeThreshold, dialogTurns}) {\n  // 确保输入参数的类型正确\n  let parsedMsgHistory = Array.isArray(messageHistory) ? [...messageHistory] : [];\n  const parsedLastTime = Number(lastMessageTime) || 0;\n  const parsedMsgCount = Number(messageCount) || 0;\n  const parsedTimeThreshold = Number(timeThreshold) || 10000;\n  const parsedMsgThreshold = Number(messageThreshold) || 10;\n  const parsedDialogTurns = Number(dialogTurns) || 0;\n  \n  // 计算当前时间\n  const currentTime = Date.now();\n  const timeSinceLastMessageMs = currentTime - parsedLastTime;\n  \n  // 检测是否是第一次对话\n  const isFirstConversation = parsedLastTime === 0 || parsedDialogTurns === 0;\n  \n  // 添加当前消息到历史记录\n  if (userChatInput) {\n    parsedMsgHistory.push(userChatInput);\n  }\n  \n  // 更新消息计数\n  const updatedMsgCount = parsedMsgCount + 1;\n  \n  // 判断触发条件\n  const timeCondition = timeSinceLastMessageMs > parsedTimeThreshold && parsedMsgHistory.length > 0;\n  const countCondition = updatedMsgCount >= parsedMsgThreshold;\n  \n  // 确定是否应该回复，对首次对话特殊处理\n  const shouldReplyByTime = timeCondition;\n  const shouldReplyByCount = countCondition;\n  const shouldReplyByFirstConversation = isFirstConversation;\n  const shouldReply = shouldReplyByTime || shouldReplyByCount || shouldReplyByFirstConversation;\n  \n  // 是否应该阻止对话（通常不需要）\n  const shouldBlock = false;\n  \n  // 准备调试信息\n  const debug = {\n    timeSinceLastMessageMs,\n    timeThresholdMs: parsedTimeThreshold,\n    parsedLastTimestamp: parsedLastTime,\n    currentTime,\n    isFirstConversation,\n    shouldReplyByTime,\n    shouldReplyByCount,\n    shouldReplyByFirstConversation\n  };\n  \n  // 优化：针对首次对话不清空消息历史和计数，只有在达到阈值时才清空\n  // 优先级：计数条件 > 时间条件 > 首次对话条件\n  let finalMessageHistory = parsedMsgHistory;\n  let finalMessageCount = updatedMsgCount;\n  \n  // 只有在达到消息数阈值或时间阈值时才清空\n  if (shouldReplyByCount || shouldReplyByTime) {\n    finalMessageHistory = [];\n    finalMessageCount = 0;\n  }\n  \n  // 返回结果\n  return {\n    userChatInput,\n    shouldReply,\n    shouldBlock,\n    lastMessageTime: String(currentTime),\n    messageHistory: finalMessageHistory,\n    messageCount: finalMessageCount,\n    dialogTurns: parsedDialogTurns + 1,\n    debug\n  };\n}",
+  "inputs": [
+    {
+      "name": "userChatInput",
+      "type": "string",
+      "required": true,
+      "description": "用户当前输入的消息"
+    },
+    {
+      "name": "messageHistory",
+      "type": "array",
+      "required": false,
+      "description": "历史消息数组"
+    },
+    {
+      "name": "lastMessageTime",
+      "type": "string",
+      "required": false,
+      "description": "上一条消息的时间戳"
+    },
+    {
+      "name": "messageCount",
+      "type": "number",
+      "required": false,
+      "description": "当前已累积的消息数量"
+    },
+    {
+      "name": "timeThreshold",
+      "type": "number",
+      "required": false,
+      "description": "触发回复的时间阈值(毫秒)，默认10000毫秒"
+    },
+    {
+      "name": "messageThreshold",
+      "type": "number",
+      "required": false,
+      "description": "触发回复的消息数阈值，默认10条"
+    },
+    {
+      "name": "dialogTurns",
+      "type": "number",
+      "required": false,
+      "description": "对话轮次，用于判断是否是首次对话"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "userChatInput",
+      "type": "string",
+      "description": "原始用户输入"
+    },
+    {
+      "name": "shouldReply",
+      "type": "boolean",
+      "description": "是否应该触发AI回复"
+    },
+    {
+      "name": "shouldBlock",
+      "type": "boolean",
+      "description": "是否应该阻止对话继续"
+    },
+    {
+      "name": "lastMessageTime",
+      "type": "string",
+      "description": "当前消息的时间戳"
+    },
+    {
+      "name": "messageHistory",
+      "type": "array",
+      "description": "更新后的消息历史"
+    },
+    {
+      "name": "messageCount",
+      "type": "number",
+      "description": "更新后的消息计数"
+    },
+    {
+      "name": "dialogTurns",
+      "type": "number",
+      "description": "更新后的对话轮次"
+    },
+    {
+      "name": "debug",
+      "type": "object",
+      "description": "调试信息"
+    }
+  ]
+} 

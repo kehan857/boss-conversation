@@ -1,0 +1,589 @@
+{
+  "name": "增强回复2.0工作流",
+  "type": "chatNode",
+  "flowType": "chatFlow",
+  "chatModuleId": "",
+  "parentId": "",
+  "showStatus": true,
+  "position": {
+    "x": 0,
+    "y": 0
+  },
+  "tools": {
+    "variables": []
+  },
+  "modules": [
+    {
+      "moduleId": "userChatInput",
+      "name": "用户问题",
+      "flowType": "questionInput",
+      "position": {
+        "x": 376.5126903553299,
+        "y": 731.1645262146306
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "moduleId": "messageWaitingTool",
+      "name": "消息等待工具",
+      "flowType": "runJs",
+      "showStatus": true,
+      "position": {
+        "x": 780,
+        "y": 730
+      },
+      "inputs": [
+        {
+          "key": "userMessage",
+          "type": "input",
+          "label": "用户消息",
+          "connected": true,
+          "value": [
+            "userChatInput",
+            "userChatInput"
+          ]
+        },
+        {
+          "key": "messageHistory",
+          "type": "input",
+          "label": "消息历史",
+          "required": false,
+          "valueType": "any",
+          "connected": true,
+          "value": [
+            "messageWaitingTool",
+            "messageHistory"
+          ]
+        },
+        {
+          "key": "messageCount",
+          "type": "numberInput",
+          "label": "消息计数",
+          "value": 0,
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "connected": true,
+          "valueType": "numberInput",
+          "description": "记录当前累积的消息数量",
+          "required": false,
+          "value": [
+            "messageWaitingTool",
+            "messageCount"
+          ]
+        },
+        {
+          "key": "messageThreshold",
+          "type": "numberInput",
+          "label": "消息阈值",
+          "value": 3,
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "valueType": "numberInput",
+          "description": "触发回复的消息数量阈值",
+          "required": false
+        },
+        {
+          "key": "lastMessageTime",
+          "type": "input",
+          "label": "上次消息时间",
+          "value": "0",
+          "valueType": "string",
+          "description": "上一条消息的时间戳",
+          "required": false,
+          "connected": true,
+          "value": [
+            "messageWaitingTool",
+            "lastMessageTime"
+          ]
+        },
+        {
+          "key": "timeThreshold",
+          "type": "numberInput",
+          "label": "时间阈值",
+          "value": 2000,
+          "min": 500,
+          "max": 10000,
+          "step": 500,
+          "valueType": "numberInput",
+          "description": "触发回复的时间阈值(毫秒)",
+          "required": false
+        },
+        {
+          "key": "dialogTurns",
+          "type": "numberInput",
+          "label": "对话轮次",
+          "value": 0,
+          "min": 0,
+          "max": 1000,
+          "step": 1,
+          "valueType": "numberInput",
+          "description": "对话轮次计数",
+          "required": false,
+          "connected": true,
+          "value": [
+            "messageWaitingTool",
+            "dialogTurns"
+          ]
+        },
+        {
+          "key": "code",
+          "type": "textArea",
+          "label": "代码",
+          "valueType": "string",
+          "description": "等待工具代码",
+          "value": "function main(inputs) {\n  // 确保输入参数的类型正确\n  let {\n    userMessage,\n    messageHistory = [],\n    messageCount = 0,\n    messageThreshold = 3,\n    lastMessageTime = \"0\",\n    timeThreshold = 2000,\n    dialogTurns = 0\n  } = inputs;\n  \n  // 解析参数，确保类型正确\n  let parsedMsgHistory = Array.isArray(messageHistory) ? [...messageHistory] : [];\n  const parsedLastTime = Number(lastMessageTime) || 0;\n  const parsedMsgCount = Number(messageCount) || 0;\n  const parsedTimeThreshold = Number(timeThreshold) || 2000;\n  const parsedMsgThreshold = Number(messageThreshold) || 3;\n  const parsedDialogTurns = Number(dialogTurns) || 0;\n  \n  // 计算当前时间\n  const currentTime = Date.now();\n  const timeSinceLastMessageMs = currentTime - parsedLastTime;\n  \n  // 判断是否是首次对话\n  const isFirstConversation = parsedLastTime === 0;\n  \n  // 添加当前消息到历史记录\n  if (userMessage) {\n    parsedMsgHistory.push(userMessage);\n  }\n  \n  // 更新消息计数\n  const updatedMsgCount = parsedMsgCount + 1;\n  \n  // 判断触发条件\n  const timeCondition = timeSinceLastMessageMs > parsedTimeThreshold && parsedMsgHistory.length > 0;\n  const countCondition = updatedMsgCount >= parsedMsgThreshold;\n  \n  // 确定是否应该回复\n  const shouldReplyByTime = timeCondition;\n  const shouldReplyByCount = countCondition;\n  const shouldReplyByFirstConversation = isFirstConversation;\n  \n  // 按条件决定是否应该回复\n  const shouldReply = shouldReplyByTime || shouldReplyByCount || shouldReplyByFirstConversation;\n  \n  // 是否应该阻止对话\n  const shouldBlock = false;\n  \n  // 准备调试信息\n  const debug = {\n    timeSinceLastMessageMs,\n    timeThresholdMs: parsedTimeThreshold,\n    parsedLastTimestamp: parsedLastTime,\n    currentTime,\n    isFirstConversation,\n    shouldReplyByTime,\n    shouldReplyByCount,\n    shouldReplyByFirstConversation,\n    messageHistoryLength: parsedMsgHistory.length,\n    inputUserMessage: userMessage,\n    parsedMsgHistory: JSON.stringify(parsedMsgHistory).slice(0, 500) + '...' // 防止过长\n  };\n  \n  // 如果需要回复，且不是因为首次对话，则清空消息历史\n  let finalMessageHistory = parsedMsgHistory;\n  let finalMessageCount = updatedMsgCount;\n  \n  if ((shouldReplyByCount || shouldReplyByTime) && shouldReply) {\n    finalMessageHistory = [];\n    finalMessageCount = 0;\n  }\n  \n  // 返回结果\n  return {\n    userMessage,\n    shouldReply,\n    shouldBlock,\n    lastMessageTime: String(currentTime),\n    messageHistory: finalMessageHistory,\n    messageCount: finalMessageCount,\n    dialogTurns: parsedDialogTurns + 1,\n    debug\n  };\n}"
+        }
+      ],
+      "outputs": [
+        {
+          "key": "shouldReply",
+          "label": "是否应答",
+          "description": "是否应该回复用户",
+          "valueType": "boolean"
+        },
+        {
+          "key": "shouldBlock",
+          "label": "是否阻止",
+          "description": "是否阻止对话继续",
+          "valueType": "boolean"
+        },
+        {
+          "key": "lastMessageTime",
+          "label": "上次消息时间",
+          "description": "上一条消息的时间戳",
+          "valueType": "string"
+        },
+        {
+          "key": "messageHistory",
+          "label": "消息历史",
+          "description": "消息历史记录",
+          "valueType": "any"
+        },
+        {
+          "key": "messageCount",
+          "label": "消息计数",
+          "description": "当前累积的消息数量",
+          "valueType": "number"
+        },
+        {
+          "key": "dialogTurns",
+          "label": "对话轮次",
+          "description": "对话轮次计数",
+          "valueType": "number"
+        },
+        {
+          "key": "debug",
+          "label": "调试信息",
+          "description": "调试相关的信息",
+          "valueType": "any"
+        },
+        {
+          "key": "userMessage",
+          "label": "用户消息",
+          "description": "当前用户消息",
+          "valueType": "string"
+        }
+      ]
+    },
+    {
+      "moduleId": "conditionalRouter",
+      "name": "条件路由器",
+      "flowType": "conditionRouter",
+      "showStatus": true,
+      "position": {
+        "x": 1170,
+        "y": 730
+      },
+      "inputs": [
+        {
+          "key": "conditions",
+          "type": "tableInput",
+          "label": "分支条件",
+          "description": "条件分支定义",
+          "required": true,
+          "valueType": "any",
+          "value": [
+            {
+              "cond": [
+                "messageWaitingTool",
+                "shouldReply"
+              ],
+              "value": true,
+              "desc": "需要回复"
+            },
+            {
+              "cond": [
+                "messageWaitingTool",
+                "shouldReply"
+              ],
+              "value": false,
+              "desc": "不需要回复"
+            }
+          ]
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "moduleId": "notifyFrontend",
+      "name": "通知前端不回复",
+      "flowType": "runJs",
+      "showStatus": true,
+      "position": {
+        "x": 1550,
+        "y": 900
+      },
+      "inputs": [
+        {
+          "key": "code",
+          "type": "textArea",
+          "label": "代码",
+          "valueType": "string",
+          "description": "通知前端不回复的代码",
+          "value": "function main(inputs) {\n  return {\n    shouldReply: false,\n    responseText: \"\" // 空回复\n  };\n}"
+        }
+      ],
+      "outputs": [
+        {
+          "key": "shouldReply",
+          "label": "是否回复",
+          "description": "是否需要回复",
+          "valueType": "boolean"
+        },
+        {
+          "key": "responseText",
+          "label": "响应文本",
+          "description": "回复的文本内容",
+          "valueType": "string"
+        }
+      ]
+    },
+    {
+      "moduleId": "modelChatNode",
+      "name": "大模型回复",
+      "flowType": "chatNode",
+      "showStatus": true,
+      "position": {
+        "x": 1550,
+        "y": 620
+      },
+      "inputs": [
+        {
+          "key": "model",
+          "type": "custom",
+          "label": "模型选择",
+          "description": "选择要使用的模型",
+          "valueType": "string",
+          "value": "gpt-3.5-turbo"
+        },
+        {
+          "key": "temperature",
+          "type": "slider",
+          "label": "温度",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "valueType": "number",
+          "value": 6
+        },
+        {
+          "key": "maxToken",
+          "type": "slider",
+          "label": "回复长度限制",
+          "min": 100,
+          "max": 4000,
+          "step": 50,
+          "valueType": "number",
+          "value": 2000
+        },
+        {
+          "key": "quoteTemplate",
+          "type": "custom",
+          "label": "引用内容模板",
+          "description": "引用内容的模板",
+          "valueType": "string",
+          "value": ""
+        },
+        {
+          "key": "quotePrompt",
+          "type": "textArea",
+          "label": "引用内容提示词",
+          "description": "引用内容的提示词",
+          "valueType": "string",
+          "value": ""
+        },
+        {
+          "key": "systemPrompt",
+          "type": "textArea",
+          "label": "系统提示词",
+          "description": "系统提示词",
+          "valueType": "string",
+          "value": "你是一个营销智能助手，擅长回答用户关于营销方面的问题，提供有价值的信息和建议。"
+        },
+        {
+          "key": "history",
+          "type": "custom",
+          "label": "历史记录",
+          "description": "聊天历史记录",
+          "required": false,
+          "valueType": "chatHistory",
+          "connected": true,
+          "value": [
+            "messageWaitingTool",
+            "messageHistory"
+          ]
+        },
+        {
+          "key": "quoteQA",
+          "type": "custom",
+          "label": "引用内容",
+          "description": "需要引用的内容",
+          "required": false,
+          "valueType": "datasetQuote",
+          "value": []
+        },
+        {
+          "key": "userChatInput",
+          "type": "custom",
+          "label": "用户问题",
+          "required": true,
+          "valueType": "string",
+          "connected": true,
+          "value": [
+            "messageWaitingTool",
+            "userMessage"
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "key": "answerText",
+          "label": "回复结果",
+          "description": "AI回复的文本内容",
+          "valueType": "string"
+        },
+        {
+          "key": "userChatInput",
+          "label": "用户问题",
+          "description": "用户提问的内容",
+          "valueType": "string"
+        }
+      ]
+    },
+    {
+      "moduleId": "enhancedResponseNode",
+      "name": "增强回复分段器",
+      "flowType": "runJs",
+      "showStatus": true,
+      "position": {
+        "x": 1900,
+        "y": 620
+      },
+      "inputs": [
+        {
+          "key": "inputText",
+          "type": "input",
+          "label": "输入文本",
+          "description": "需要处理的原始文本",
+          "required": true,
+          "valueType": "string",
+          "connected": true,
+          "value": [
+            "modelChatNode",
+            "answerText"
+          ]
+        },
+        {
+          "key": "segmentLength",
+          "type": "numberInput",
+          "label": "分段长度",
+          "value": 50,
+          "min": 10,
+          "max": 200,
+          "step": 10,
+          "valueType": "numberInput",
+          "description": "每段文本的最大字符数",
+          "required": false
+        },
+        {
+          "key": "accumulatedDelay",
+          "type": "numberInput",
+          "label": "延迟时间",
+          "value": 2000,
+          "min": 500,
+          "max": 5000,
+          "step": 500,
+          "valueType": "numberInput",
+          "description": "每段显示的延迟时间(毫秒)",
+          "required": false
+        },
+        {
+          "key": "code",
+          "type": "textArea",
+          "label": "代码",
+          "valueType": "string",
+          "description": "增强回复分段器代码",
+          "value": "async function main(inputs) {\n  // 解析输入参数\n  const { inputText, accumulatedDelay = 2000, segmentLength = 150 } = inputs;\n  \n  // 处理输入可能是字符串或数组的情况\n  let textToProcess = inputText;\n  \n  // 如果输入为空，返回空数组\n  if (!textToProcess) {\n    return {\n      outputText: [],\n      accumulatedDelay: accumulatedDelay\n    };\n  }\n  \n  // 如果输入已经是数组，则直接使用\n  if (Array.isArray(textToProcess)) {\n    return {\n      outputText: textToProcess,\n      accumulatedDelay: accumulatedDelay\n    };\n  }\n  \n  // 如果输入是字符串，分段处理\n  function segmentText(text, maxLength) {\n    if (!text || text.length <= maxLength) {\n      return [text];\n    }\n    \n    const segments = [];\n    let currentSegment = '';\n    \n    // 按句子分割，保留分隔符\n    const sentences = text.split(/([。！？.!?])/g);\n    \n    for (let i = 0; i < sentences.length; i += 2) {\n      const sentence = sentences[i] + (sentences[i + 1] || '');\n      \n      // 如果当前段落加上新句子会超出最大长度，创建新段落\n      if (currentSegment.length + sentence.length > maxLength && currentSegment.length > 0) {\n        segments.push(currentSegment);\n        currentSegment = sentence;\n      } else {\n        currentSegment += sentence;\n      }\n    }\n    \n    // 添加最后一段\n    if (currentSegment.length > 0) {\n      segments.push(currentSegment);\n    }\n    \n    return segments;\n  }\n  \n  // 添加表情和格式化\n  function formatText(segments) {\n    const emojis = ['😊', '👍', '✨', '🔍', '📝', '💡', '🌟', '📊', '🎯', '🚀'];\n    \n    return segments.map((segment, index) => {\n      // 随机选择表情\n      const emoji = emojis[Math.floor(Math.random() * emojis.length)];\n      \n      // 为每段添加表情前缀\n      return `${emoji} ${segment}`;\n    });\n  }\n  \n  // 执行分段和格式化\n  const segments = segmentText(textToProcess, segmentLength);\n  const formattedSegments = formatText(segments);\n  \n  // 返回处理结果\n  return {\n    outputText: formattedSegments,\n    accumulatedDelay: accumulatedDelay\n  };\n}"
+        }
+      ],
+      "outputs": [
+        {
+          "key": "outputText",
+          "label": "输出文本",
+          "description": "分段后的文本数组",
+          "valueType": "arrayString"
+        },
+        {
+          "key": "accumulatedDelay",
+          "label": "延迟时间",
+          "description": "每段显示的延迟时间(毫秒)",
+          "valueType": "number"
+        }
+      ]
+    },
+    {
+      "moduleId": "chatOutput",
+      "name": "对话输出",
+      "flowType": "chatOutput",
+      "showStatus": true,
+      "position": {
+        "x": 2300,
+        "y": 730
+      },
+      "inputs": [
+        {
+          "key": "output",
+          "type": "custom",
+          "label": "回复内容",
+          "description": "输出到对话框的内容",
+          "required": true,
+          "valueType": "string",
+          "connected": true,
+          "value": [
+            "enhancedResponseNode",
+            "outputText"
+          ]
+        },
+        {
+          "key": "delay",
+          "type": "numberInput",
+          "label": "输出延迟",
+          "min": 0,
+          "max": 10000,
+          "step": 100,
+          "value": 0,
+          "valueType": "number",
+          "description": "延迟输出的时间(毫秒)",
+          "connected": true,
+          "value": [
+            "enhancedResponseNode",
+            "accumulatedDelay"
+          ]
+        },
+        {
+          "key": "shouldReply",
+          "type": "switch",
+          "label": "是否回复",
+          "value": true,
+          "valueType": "boolean",
+          "description": "是否应该回复(false则不显示回复)",
+          "connected": true,
+          "value": [
+            "messageWaitingTool",
+            "shouldReply"
+          ]
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "userChatInput",
+      "target": "messageWaitingTool",
+      "sourceHandle": "userChatInput",
+      "targetHandle": "userMessage"
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "messageWaitingTool",
+      "sourceHandle": "messageHistory",
+      "targetHandle": "messageHistory"
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "messageWaitingTool",
+      "sourceHandle": "messageCount",
+      "targetHandle": "messageCount"
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "messageWaitingTool",
+      "sourceHandle": "lastMessageTime",
+      "targetHandle": "lastMessageTime"
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "messageWaitingTool",
+      "sourceHandle": "dialogTurns",
+      "targetHandle": "dialogTurns"
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "conditionalRouter",
+      "sourceHandle": "shouldReply",
+      "targetHandle": "conditions"
+    },
+    {
+      "source": "conditionalRouter",
+      "target": "modelChatNode",
+      "sourceHandle": "需要回复",
+      "targetHandle": null
+    },
+    {
+      "source": "conditionalRouter",
+      "target": "notifyFrontend",
+      "sourceHandle": "不需要回复",
+      "targetHandle": null
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "modelChatNode",
+      "sourceHandle": "messageHistory",
+      "targetHandle": "history"
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "modelChatNode",
+      "sourceHandle": "userMessage",
+      "targetHandle": "userChatInput"
+    },
+    {
+      "source": "modelChatNode",
+      "target": "enhancedResponseNode",
+      "sourceHandle": "answerText",
+      "targetHandle": "inputText"
+    },
+    {
+      "source": "enhancedResponseNode",
+      "target": "chatOutput",
+      "sourceHandle": "outputText",
+      "targetHandle": "output"
+    },
+    {
+      "source": "enhancedResponseNode",
+      "target": "chatOutput",
+      "sourceHandle": "accumulatedDelay",
+      "targetHandle": "delay"
+    },
+    {
+      "source": "messageWaitingTool",
+      "target": "chatOutput",
+      "sourceHandle": "shouldReply",
+      "targetHandle": "shouldReply"
+    }
+  ]
+} 

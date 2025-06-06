@@ -1,0 +1,74 @@
+{
+  "name": "多消息汇总插件",
+  "version": "1.0",
+  "description": "在短时间内汇总用户连续发送的消息，当用户停顿超过设定时间或消息数超过设定值时触发AI回复",
+  "type": "function",
+  "codeType": "js-plugin",
+  "author": "FastGPT用户",
+  "code": "function main({userMessage, lastMessageTime, messageHistory, messageCount, timeThreshold, messageThreshold}) {\n  // 计算当前时间和消息间隔\n  const currentTime = Date.now();\n  const timeSinceLastMessage = currentTime - (Number(lastMessageTime) || 0);\n\n  // 准备消息历史\n  let updatedHistory = Array.isArray(messageHistory) ? [...messageHistory] : [];\n  updatedHistory.push(userMessage || '');\n\n  // 更新消息计数\n  const newMessageCount = (Number(messageCount) || 0) + 1;\n\n  // 判断触发条件\n  const timeThresholdMs = Number(timeThreshold) || 5000;\n  const messageThresholdNum = Number(messageThreshold) || 10;\n  const timeCondition = timeSinceLastMessage > timeThresholdMs && updatedHistory.length > 0;\n  const countCondition = newMessageCount >= messageThresholdNum;\n  const shouldReply = timeCondition || countCondition;\n\n  // 合并消息\n  let combinedMessage = '';\n  if (shouldReply && updatedHistory.length > 0) {\n    combinedMessage = updatedHistory.join('\\n\\n');\n  }\n\n  // 最终消息计数\n  const finalMessageCount = shouldReply ? 0 : newMessageCount;\n\n  // 返回结果\n  return {\n    shouldReply: Boolean(shouldReply),\n    updatedMessageHistory: shouldReply ? [] : updatedHistory,\n    combinedMessage: combinedMessage,\n    lastMessageTime: currentTime,\n    messageCount: finalMessageCount\n  };\n}",
+  "inputs": [
+    {
+      "name": "userMessage",
+      "type": "string",
+      "required": true,
+      "description": "用户当前输入的消息"
+    },
+    {
+      "name": "lastMessageTime",
+      "type": "number",
+      "required": false,
+      "description": "上一条消息的时间戳"
+    },
+    {
+      "name": "messageHistory",
+      "type": "array",
+      "required": false,
+      "description": "历史消息数组"
+    },
+    {
+      "name": "messageCount",
+      "type": "number",
+      "required": false,
+      "description": "当前已累积的消息数量"
+    },
+    {
+      "name": "timeThreshold",
+      "type": "number",
+      "required": false,
+      "description": "触发回复的时间阈值(毫秒)，默认5000毫秒"
+    },
+    {
+      "name": "messageThreshold",
+      "type": "number",
+      "required": false,
+      "description": "触发回复的消息数阈值，默认10条"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "shouldReply",
+      "type": "boolean",
+      "description": "是否应该触发AI回复"
+    },
+    {
+      "name": "updatedMessageHistory",
+      "type": "array",
+      "description": "更新后的消息历史"
+    },
+    {
+      "name": "combinedMessage",
+      "type": "string",
+      "description": "合并后的用户消息"
+    },
+    {
+      "name": "lastMessageTime",
+      "type": "number",
+      "description": "当前消息的时间戳"
+    },
+    {
+      "name": "messageCount",
+      "type": "number",
+      "description": "更新后的消息计数"
+    }
+  ]
+} 

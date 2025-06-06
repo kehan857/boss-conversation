@@ -1,0 +1,5621 @@
+{
+"nodes": [
+{
+"nodeId": "userGuide",
+"name": "common:core.module.template.system_config",
+"intro": "common:core.module.template.system_config_info",
+"avatar": "core/workflow/template/systemConfig",
+"flowNodeType": "userGuide",
+"position": {
+"x": -3482.388587564118,
+"y": -1160.2934215112173
+},
+"version": "481",
+"inputs": [
+{
+"key": "welcomeText",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "string",
+"label": "core.app.Welcome Text",
+"value": ""
+},
+{
+"key": "variables",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "core.app.Chat Variable",
+"value": []
+},
+{
+"key": "questionGuide",
+"valueType": "boolean",
+"renderTypeList": [
+"hidden"
+],
+"label": "core.app.Question Guide",
+"value": false
+},
+{
+"key": "tts",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": {
+"type": "web"
+}
+},
+{
+"key": "whisper",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": {
+"open": false,
+"autoSend": false,
+"autoTTSResponse": false
+}
+},
+{
+"key": "scheduleTrigger",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": null
+}
+],
+"outputs": [],
+"isFolded": false
+},
+{
+"nodeId": "448745",
+"name": "common:core.module.template.work_start",
+"intro": "",
+"avatar": "core/workflow/template/workflowStart",
+"flowNodeType": "workflowStart",
+"position": {
+"x": -2931.537131368658,
+"y": -1084.9454186538492
+},
+"version": "481",
+"inputs": [
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "common:core.module.input.label.user question",
+"required": true,
+"toolDescription": "用户问题",
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "userChatInput",
+"key": "userChatInput",
+"label": "common:core.module.input.label.user question",
+"type": "static",
+"valueType": "string",
+"description": ""
+}
+]
+},
+{
+"nodeId": "dT1wVEwObdVg",
+"name": "知识库搜索",
+"intro": "调用“语义检索”和“全文检索”能力，从“知识库”中查找可能与问题相关的参考内容",
+"avatar": "core/workflow/template/datasetSearch",
+"flowNodeType": "datasetSearchNode",
+"showStatus": true,
+"position": {
+"x": 1270.4385888033426,
+"y": -674.271279451132
+},
+"version": "481",
+"inputs": [
+{
+"key": "datasets",
+"renderTypeList": [
+"selectDataset",
+"reference"
+],
+"label": "选择知识库",
+"value": [],
+"valueType": "selectDataset",
+"required": true,
+"valueDesc": "{\n  datasetId: string;\n}[]",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "similarity",
+"renderTypeList": [
+"selectDatasetParamsModal"
+],
+"label": "",
+"value": 0.55,
+"valueType": "number",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "limit",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": 12900,
+"valueType": "number",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "searchMode",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "embedding",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "embeddingWeight",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0.5,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "usingReRank",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "rerankModel",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": "",
+"value": "gpt-4o"
+},
+{
+"key": "rerankWeight",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0.5,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "datasetSearchUsingExtensionQuery",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "datasetSearchExtensionModel",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"value": "gpt-4o-mini"
+},
+{
+"key": "datasetSearchExtensionBg",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "authTmbId",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "用户问题",
+"toolDescription": "需要检索的内容",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": ""
+},
+{
+"key": "collectionFilterMatch",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"label": "集合元数据过滤",
+"valueType": "string",
+"isPro": true,
+"description": "workflow:filter_description",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": "",
+"value": ""
+}
+],
+"outputs": [
+{
+"id": "quoteQA",
+"key": "quoteQA",
+"label": "common:core.module.Dataset quote.label",
+"description": "特殊数组格式，搜索结果为空时，返回空数组。",
+"type": "static",
+"valueType": "datasetQuote",
+"valueDesc": "{\n  id: string;\n  datasetId: string;\n  collectionId: string;\n  sourceName: string;\n  sourceId?: string;\n  q: string;\n  a: string\n}[]"
+}
+]
+},
+{
+"nodeId": "ivmHqG9kkBrT",
+"name": "判断器",
+"intro": "根据一定的条件，执行不同的分支。",
+"avatar": "core/workflow/template/ifelse",
+"flowNodeType": "ifElseNode",
+"showStatus": true,
+"position": {
+"x": 2024.5742373877538,
+"y": -458.65310025577924
+},
+"version": "481",
+"inputs": [
+{
+"key": "ifElseList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": [
+{
+"condition": "AND",
+"list": [
+{
+"variable": [
+"dT1wVEwObdVg",
+"quoteQA"
+],
+"condition": "isNotEmpty"
+}
+]
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "ifElseResult",
+"key": "ifElseResult",
+"label": "workflow:judgment_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+},
+{
+"nodeId": "a5uiaEgOM4WO",
+"name": "workflow:template.ai_chat",
+"intro": "workflow:template.ai_chat_intro",
+"avatar": "core/workflow/template/aiChat",
+"flowNodeType": "chatNode",
+"showStatus": true,
+"position": {
+"x": 2894.7007336423626,
+"y": 170.16307723659042
+},
+"version": "490",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"settingLLMModel",
+"reference"
+],
+"label": "common:core.module.input.label.aiModel",
+"valueType": "string",
+"value": "Doubao-1.5-pro-32k",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "temperature",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 1,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "maxToken",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 8000,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "isResponseAnswerText",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": true,
+"valueType": "boolean",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatQuoteRole",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "system",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteTemplate",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quotePrompt",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatVision",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatReasoning",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatTopP",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatStopSign",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatResponseFormat",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatJsonSchema",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "common:core.ai.Prompt",
+"description": "core.app.tip.systemPromptTip",
+"placeholder": "core.app.tip.chatNodeSystemPromptTip",
+"value": "##角色设定\n{{$VARIABLE_NODE_ID.role$}}\n\n##核心任务\n1. 用口语化的表达方式进行回复\n2. 回答控制在100字以内\n3. 禁止出现以下内容：  \n   - \"根据知识库\"、\"如文档所述\"等引用提示  \n   - “我们的项目”\n   - “投资”、“挣钱”、“保本”、“保收益”、“保盈利”\n   - \"您还有其他问题吗？\"等客服话术  \n   - “加微信”，\"发您邮箱“\n   - “不知道”、“不清楚”\n4. 所有项目要说我们加速孵化的项目\n5. 你在微信中与客户沟通\n6. 将话术中所有出现的投资改为合作\n7. 禁止出现任何项目符号、特殊符号、Markdown符号 如：###、、-等\n8. 将话术中所有出现的你改为您",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "common:core.module.input.label.chat history",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 10,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteQA",
+"renderTypeList": [
+"settingDatasetQuotePrompt"
+],
+"label": "",
+"debugLabel": "知识库引用",
+"description": "",
+"valueType": "datasetQuote",
+"toolDescription": ""
+},
+{
+"key": "fileUrlList",
+"renderTypeList": [
+"reference",
+"input"
+],
+"label": "app:file_quote_link",
+"debugLabel": "文件链接",
+"valueType": "arrayString",
+"value": [],
+"toolDescription": "",
+"description": "app:workflow.user_file_input_desc"
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "workflow:user_question",
+"toolDescription": "用户问题",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "history",
+"key": "history",
+"required": true,
+"label": "common:core.module.output.label.New context",
+"description": "将本次回复内容拼接上历史记录，作为新的上下文返回",
+"valueType": "chatHistory",
+"valueDesc": "{\n  obj: System | Human | AI;\n  value: string;\n}[]",
+"type": "static"
+},
+{
+"id": "answerText",
+"key": "answerText",
+"required": true,
+"label": "common:core.module.output.label.Ai response content",
+"description": "将在 stream 回复完毕后触发",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "reasoningText",
+"key": "reasoningText",
+"required": false,
+"label": "workflow:reasoning_text",
+"valueType": "string",
+"type": "static",
+"invalid": true,
+"description": ""
+}
+],
+"isFolded": false
+},
+{
+"nodeId": "rh89rLavcO4E",
+"name": "workflow:template.ai_chat",
+"intro": "workflow:template.ai_chat_intro",
+"avatar": "core/workflow/template/aiChat",
+"flowNodeType": "chatNode",
+"showStatus": true,
+"position": {
+"x": 2894.7007336423626,
+"y": -1216.6531002557792
+},
+"version": "490",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"settingLLMModel",
+"reference"
+],
+"label": "common:core.module.input.label.aiModel",
+"valueType": "string",
+"value": "Doubao-1.5-pro-32k",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "temperature",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "maxToken",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 8000,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "isResponseAnswerText",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": true,
+"valueType": "boolean",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatQuoteRole",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "system",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteTemplate",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quotePrompt",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatVision",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatReasoning",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatTopP",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatStopSign",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatResponseFormat",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatJsonSchema",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "common:core.ai.Prompt",
+"description": "core.app.tip.systemPromptTip",
+"placeholder": "core.app.tip.chatNodeSystemPromptTip",
+"value": "##角色设定\n{{$VARIABLE_NODE_ID.role$}}\n\n##核心任务\n1. 用口语化的表达方式运用知识库的引用内容进行回复\n2. 回答控制在100字以内\n3. 禁止出现以下内容：  \n   - \"根据知识库\"、\"如文档所述\"等引用提示  \n   - “我们的项目”\n   - “投资”、“挣钱”、“保本”、“保收益”、“保盈利”\n   - \"您还有其他问题吗？\"等客服话术  \n   - \"发您邮箱“\n4. 所有项目要说我们加速孵化的项目\n5. 你在微信中与客户沟通\n6. 将话术中所有出现的投资改为合作\n7. 禁止出现任何项目符号、特殊符号、Markdown符号 如：###、、-等\n8. 将话术中所有出现的你改为您",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "common:core.module.input.label.chat history",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 10,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteQA",
+"renderTypeList": [
+"settingDatasetQuotePrompt"
+],
+"label": "",
+"debugLabel": "知识库引用",
+"description": "",
+"valueType": "datasetQuote",
+"value": [
+"dT1wVEwObdVg",
+"quoteQA"
+],
+"toolDescription": ""
+},
+{
+"key": "fileUrlList",
+"renderTypeList": [
+"reference",
+"input"
+],
+"label": "app:file_quote_link",
+"debugLabel": "文件链接",
+"valueType": "arrayString",
+"value": [],
+"toolDescription": "",
+"description": "app:workflow.user_file_input_desc"
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "workflow:user_question",
+"toolDescription": "用户问题",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "history",
+"key": "history",
+"required": true,
+"label": "common:core.module.output.label.New context",
+"description": "将本次回复内容拼接上历史记录，作为新的上下文返回",
+"valueType": "chatHistory",
+"valueDesc": "{\n  obj: System | Human | AI;\n  value: string;\n}[]",
+"type": "static"
+},
+{
+"id": "answerText",
+"key": "answerText",
+"required": true,
+"label": "common:core.module.output.label.Ai response content",
+"description": "将在 stream 回复完毕后触发",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "reasoningText",
+"key": "reasoningText",
+"required": false,
+"label": "workflow:reasoning_text",
+"valueType": "string",
+"type": "static",
+"invalid": true,
+"description": ""
+}
+],
+"isFolded": false
+},
+{
+"nodeId": "rnwjrpJfE6aH",
+"name": "记录对话论数",
+"intro": "执行一段简单的脚本代码，通常用于进行复杂的数据处理。",
+"avatar": "core/workflow/template/codeRun",
+"flowNodeType": "code",
+"showStatus": true,
+"position": {
+"x": -1159.0621950348177,
+"y": -1093.338985470159
+},
+"version": "482",
+"inputs": [
+{
+"key": "system_addInputParam",
+"renderTypeList": [
+"addInputParam"
+],
+"valueType": "dynamic",
+"label": "",
+"required": false,
+"description": "workflow:these_variables_will_be_input_parameters_for_code_execution",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "codeType",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": "js",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"valueType": "string"
+},
+{
+"key": "code",
+"renderTypeList": [
+"custom"
+],
+"label": "",
+"value": "function main({data1}){\n   if (data1 === null || data1 === undefined || data1 === '') {\n  data1 = 1;\n} else {\n  data1 = data1+1;\n}\n    return {\n        result: data1\n    }\n}\n",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"valueType": "string"
+},
+{
+"renderTypeList": [
+"reference"
+],
+"valueType": "number",
+"canEdit": true,
+"key": "data1",
+"label": "data1",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"required": true,
+"value": [
+"VARIABLE_NODE_ID",
+"dialogueCount"
+]
+}
+],
+"outputs": [
+{
+"id": "system_rawResponse",
+"key": "system_rawResponse",
+"label": "workflow:full_response_data",
+"valueType": "object",
+"type": "static",
+"description": ""
+},
+{
+"id": "error",
+"key": "error",
+"label": "workflow:execution_error",
+"description": "代码运行错误信息，成功时返回空",
+"valueType": "object",
+"type": "static"
+},
+{
+"id": "system_addOutputParam",
+"key": "system_addOutputParam",
+"type": "dynamic",
+"valueType": "dynamic",
+"label": "",
+"customFieldConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectApp",
+"selectDataset"
+],
+"showDescription": false,
+"showDefaultValue": false
+},
+"description": "将代码中 return 的对象作为输出，传递给后续的节点。变量名需要对应 return 的 key",
+"valueDesc": ""
+},
+{
+"id": "qLUQfhG0ILRX",
+"type": "dynamic",
+"key": "result",
+"valueType": "number",
+"label": "result",
+"valueDesc": "",
+"description": ""
+}
+]
+},
+{
+"nodeId": "nwPJXGoYdE05",
+"name": "计数更新",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": -686.2062437953743,
+"y": -1005.6389619418685
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"dialogueCount"
+],
+"value": [
+"rnwjrpJfE6aH",
+"qLUQfhG0ILRX"
+],
+"valueType": "any",
+"renderType": "reference"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "wNuXxATuX5xq",
+"name": "问题分类",
+"intro": "根据用户的历史记录和当前问题判断该次提问的类型。可以添加多组问题类型，下面是一个模板例子:\n类型1: 打招呼\n类型2: 关于商品“使用”问题\n类型3: 关于商品“购买”问题\n类型4: 其他问题",
+"avatar": "core/workflow/template/questionClassify",
+"flowNodeType": "classifyQuestion",
+"showStatus": true,
+"position": {
+"x": -213.0003065348037,
+"y": -1293.9936989692944
+},
+"version": "481",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"selectLLMModel",
+"reference"
+],
+"label": "AI 模型",
+"required": true,
+"valueType": "string",
+"llmModelType": "classify",
+"value": "gpt-4o-mini",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "背景知识",
+"description": "core.module.input.description.Background",
+"placeholder": "core.module.input.placeholder.Classify background",
+"value": "1.要项目相关资料：当客户询问是否有资料时，归为此分类；\n2.聊项目、大会相关内容，各种疑问及其他：当客户问行业，项目、大会的问题或是让介绍项目、大会时或与项目大会都无关的内容，各种疑问归为此类；\n3.辱骂、骚扰、厌烦：当客户进行语言攻击，辱骂、骚扰时归为此类；\n4.肯定回答：当客户回复好、可以等这样的回答归为此类；",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "聊天记录",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 10,
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "用户问题",
+"toolDescription": "用户输入的问题（问题需要完善）",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": ""
+},
+{
+"renderTypeList": [
+"custom"
+],
+"valueType": "any",
+"label": "",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"key": "agents",
+"value": [
+{
+"value": "要项目相关资料",
+"key": "wqre"
+},
+{
+"value": "聊项目、大会相关内容，各种疑问及其他",
+"key": "sdfa"
+},
+{
+"value": "辱骂、骚扰、厌烦",
+"key": "jAHIz73GtWUv"
+},
+{
+"value": "肯定回答",
+"key": "kHYT4lUV2MaG"
+}
+]
+}
+],
+"outputs": [
+{
+"id": "cqResult",
+"key": "cqResult",
+"required": true,
+"label": "workflow:classification_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+},
+{
+"nodeId": "hVce85CWE3zp",
+"parentNodeId": "g51Bn8L1yqRo",
+"name": "物料搜索",
+"intro": "调用“语义检索”和“全文检索”能力，从“知识库”中查找可能与问题相关的参考内容",
+"avatar": "core/workflow/template/datasetSearch",
+"flowNodeType": "datasetSearchNode",
+"showStatus": true,
+"position": {
+"x": 2629.693873250748,
+"y": -2611.7069730529583
+},
+"version": "481",
+"inputs": [
+{
+"key": "datasets",
+"renderTypeList": [
+"selectDataset",
+"reference"
+],
+"label": "选择知识库",
+"value": [],
+"valueType": "selectDataset",
+"required": true,
+"valueDesc": "{\n  datasetId: string;\n}[]",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "similarity",
+"renderTypeList": [
+"selectDatasetParamsModal"
+],
+"label": "",
+"value": 0.55,
+"valueType": "number",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "limit",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": 9700,
+"valueType": "number",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "searchMode",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "embedding",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "embeddingWeight",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0.5,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "usingReRank",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "rerankModel",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": "",
+"value": "gpt-4o"
+},
+{
+"key": "rerankWeight",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0.5,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "datasetSearchUsingExtensionQuery",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "datasetSearchExtensionModel",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "datasetSearchExtensionBg",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "authTmbId",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "用户问题",
+"toolDescription": "需要检索的内容",
+"required": true,
+"value": [
+"fQPDvwr6U4fi",
+"loopStartInput"
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"selectedTypeIndex": 0
+},
+{
+"key": "collectionFilterMatch",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"label": "集合元数据过滤",
+"valueType": "string",
+"isPro": true,
+"description": "workflow:filter_description",
+"value": "",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "quoteQA",
+"key": "quoteQA",
+"label": "common:core.module.Dataset quote.label",
+"description": "特殊数组格式，搜索结果为空时，返回空数组。",
+"type": "static",
+"valueType": "datasetQuote",
+"valueDesc": "{\n  id: string;\n  datasetId: string;\n  collectionId: string;\n  sourceName: string;\n  sourceId?: string;\n  q: string;\n  a: string\n}[]"
+}
+]
+},
+{
+"nodeId": "dkGlTVzLIcv9",
+"parentNodeId": "g51Bn8L1yqRo",
+"name": "判断器#2",
+"intro": "根据一定的条件，执行不同的分支。",
+"avatar": "core/workflow/template/ifelse",
+"flowNodeType": "ifElseNode",
+"showStatus": true,
+"position": {
+"x": 3323.1275827721424,
+"y": -2866.989377186373
+},
+"version": "481",
+"inputs": [
+{
+"key": "ifElseList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": [
+{
+"condition": "AND",
+"list": [
+{
+"variable": [
+"hVce85CWE3zp",
+"quoteQA"
+],
+"condition": "isEmpty"
+}
+]
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "ifElseResult",
+"key": "ifElseResult",
+"label": "workflow:judgment_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+},
+{
+"nodeId": "azV2kbvbYuez",
+"name": "指定回复#3",
+"intro": "该模块可以直接回复一段指定的内容。常用于引导、提示。非字符串内容传入时，会转成字符串进行输出。",
+"avatar": "core/workflow/template/reply",
+"flowNodeType": "answerNode",
+"position": {
+"x": 5689.6575437487545,
+"y": -1827.5975924149604
+},
+"version": "481",
+"inputs": [
+{
+"key": "text",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"valueType": "any",
+"required": true,
+"label": "回复的内容",
+"description": "common:core.module.input.description.Response content",
+"placeholder": "common:core.module.input.description.Response content",
+"value": "%%4$${{$VARIABLE_NODE_ID.projectName$}}$*$您可以看下这份资料，里面有{{$VARIABLE_NODE_ID.projectName$}}的详细介绍\n",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "tFcqTpLIhvsi",
+"parentNodeId": "g51Bn8L1yqRo",
+"name": "文本内容提取",
+"intro": "可从文本中提取指定的数据，例如：sql语句、搜索关键词、代码等",
+"avatar": "core/workflow/template/extractJson",
+"flowNodeType": "contentExtract",
+"showStatus": true,
+"position": {
+"x": 4049.0658526242355,
+"y": -2671.2122184530845
+},
+"version": "481",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"selectLLMModel",
+"reference"
+],
+"label": "AI 模型",
+"required": true,
+"valueType": "string",
+"llmModelType": "extractFields",
+"value": "gpt-4o-mini",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "description",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"valueType": "string",
+"label": "提取要求描述",
+"description": "workflow:extraction_requirements_description_detail",
+"placeholder": "workflow:extraction_requirements_placeholder",
+"value": "",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "聊天记录",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 0,
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "content",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"label": "需要提取的文本",
+"required": true,
+"valueType": "string",
+"toolDescription": "需要检索的内容",
+"value": "{{$hVce85CWE3zp.quoteQA$}}",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"selectedTypeIndex": 1
+},
+{
+"key": "extractKeys",
+"renderTypeList": [
+"custom"
+],
+"label": "",
+"valueType": "any",
+"description": "workflow:target_fields_description",
+"value": [
+{
+"valueType": "string",
+"required": false,
+"defaultValue": "漂亮妈妈",
+"desc": "问题",
+"key": "q",
+"enum": ""
+}
+],
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "success",
+"key": "success",
+"label": "workflow:full_field_extraction",
+"required": true,
+"description": "提取字段全部填充时返回 true （模型提取或使用默认值均属于成功）",
+"valueType": "boolean",
+"type": "static"
+},
+{
+"id": "fields",
+"key": "fields",
+"label": "workflow:complete_extraction_result",
+"required": true,
+"description": "一个 JSON 字符串，例如：{\"name:\":\"YY\",\"Time\":\"2023/7/2 18:00\"}",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "ltFCXXlJEztL",
+"key": "q",
+"label": "提取结果-问题",
+"valueType": "string",
+"type": "static"
+}
+]
+},
+{
+"nodeId": "c0bYEbxvrcCk",
+"name": "高意向",
+"intro": "可以发出一个 HTTP 请求，实现更为复杂的操作（联网搜索、数据库查询等）",
+"avatar": "core/workflow/template/httpRequest",
+"flowNodeType": "httpRequest468",
+"showStatus": true,
+"position": {
+"x": 1220.371527833193,
+"y": -3795.351610126025
+},
+"version": "481",
+"inputs": [
+{
+"key": "system_addInputParam",
+"renderTypeList": [
+"addInputParam"
+],
+"valueType": "dynamic",
+"label": "",
+"required": false,
+"description": "common:core.module.input.description.HTTP Dynamic Input",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpMethod",
+"renderTypeList": [
+"custom"
+],
+"valueType": "string",
+"label": "",
+"value": "POST",
+"required": true,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpTimeout",
+"renderTypeList": [
+"custom"
+],
+"valueType": "number",
+"label": "",
+"value": 30,
+"min": 5,
+"max": 600,
+"required": true,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpReqUrl",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "string",
+"label": "",
+"description": "common:core.module.input.description.Http Request Url",
+"placeholder": "https://api.ai.com/getInventory",
+"required": false,
+"value": "https://lbb-gw.tojoycloud.com/tbh-intelligence/chat/intention",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpHeader",
+"renderTypeList": [
+"custom"
+],
+"valueType": "any",
+"value": [
+{
+"key": "token",
+"type": "string",
+"value": "oniomixydzvutdxqkvwcumnitrzwfvbl"
+},
+{
+"key": "Content-Type",
+"type": "string",
+"value": "application/json;charset=utf-8"
+}
+],
+"label": "",
+"description": "common:core.module.input.description.Http Request Header",
+"placeholder": "common:core.module.input.description.Http Request Header",
+"required": false,
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpParams",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"value": [],
+"label": "",
+"required": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpJsonBody",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"value": " {\r\n    \"user\": \"{{accountNo}}\",  \r\n     \"nickName\":\"{{nickName}}\",\n     \"nickId\":\"{{nickId}}\"\n\r\n  }",
+"label": "",
+"required": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpFormBody",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"value": [],
+"label": "",
+"required": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpContentType",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "string",
+"value": "json",
+"label": "",
+"required": false,
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "error",
+"key": "error",
+"label": "workflow:request_error",
+"description": "HTTP请求错误信息，成功时返回空",
+"valueType": "object",
+"type": "static"
+},
+{
+"id": "httpRawResponse",
+"key": "httpRawResponse",
+"required": true,
+"label": "workflow:raw_response",
+"description": "HTTP请求的原始响应。只能接受字符串或JSON类型响应数据。",
+"valueType": "any",
+"type": "static"
+},
+{
+"id": "system_addOutputParam",
+"key": "system_addOutputParam",
+"type": "dynamic",
+"valueType": "dynamic",
+"label": "输出字段提取",
+"customFieldConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectApp",
+"selectDataset"
+],
+"showDescription": false,
+"showDefaultValue": false
+},
+"description": "可以通过 JSONPath 语法来提取响应值中的指定字段",
+"valueDesc": ""
+}
+]
+},
+{
+"nodeId": "zkTTthv5ESTI",
+"name": "提取客户对话",
+"intro": "执行一段简单的脚本代码，通常用于进行复杂的数据处理。",
+"avatar": "core/workflow/template/codeRun",
+"flowNodeType": "code",
+"showStatus": true,
+"position": {
+"x": 646.2953478141901,
+"y": -1603.9600768273979
+},
+"version": "482",
+"inputs": [
+{
+"key": "system_addInputParam",
+"renderTypeList": [
+"addInputParam"
+],
+"valueType": "dynamic",
+"label": "",
+"required": false,
+"description": "workflow:these_variables_will_be_input_parameters_for_code_execution",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "codeType",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": "js",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"valueType": "string"
+},
+{
+"key": "code",
+"renderTypeList": [
+"custom"
+],
+"label": "",
+"value": "function main({data1,data2}){\n     const humanContents = [];\n    // 遍历 data1 数组\n    for (let i = 0; i < data1.length; i++) {\n        const item = data1[i];\n        // 检查 obj 是否为 \"Human\" 且相关属性存在\n        if (item.obj === \"Human\") {\n            humanContents.push(item.value[0].text.content);\n        }\n    }\n    // 将 query1 插入到数组的最后一个位置\n    humanContents.push(data2);\n    // 对数组进行倒序\n    //humanContents.reverse();\n    return {concatenatedResult: humanContents}\n}",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"valueType": "string"
+},
+{
+"renderTypeList": [
+"reference"
+],
+"valueType": "arrayObject",
+"canEdit": true,
+"key": "data1",
+"label": "data1",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"required": true,
+"value": [
+[
+"VARIABLE_NODE_ID",
+"histories"
+]
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"renderTypeList": [
+"reference"
+],
+"valueType": "string",
+"canEdit": true,
+"key": "data2",
+"label": "data2",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+]
+}
+],
+"outputs": [
+{
+"id": "system_rawResponse",
+"key": "system_rawResponse",
+"label": "workflow:full_response_data",
+"valueType": "object",
+"type": "static",
+"description": ""
+},
+{
+"id": "error",
+"key": "error",
+"label": "workflow:execution_error",
+"description": "代码运行错误信息，成功时返回空",
+"valueType": "object",
+"type": "static"
+},
+{
+"id": "system_addOutputParam",
+"key": "system_addOutputParam",
+"type": "dynamic",
+"valueType": "dynamic",
+"label": "",
+"customFieldConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": false
+},
+"description": "将代码中 return 的对象作为输出，传递给后续的节点。变量名需要对应 return 的 key",
+"valueDesc": ""
+},
+{
+"id": "qLUQfhG0ILRX",
+"type": "dynamic",
+"key": "concatenatedResult",
+"valueType": "string",
+"label": "concatenatedResult",
+"valueDesc": "",
+"description": ""
+}
+]
+},
+{
+"nodeId": "ldqeU1xzik0X",
+"name": "变量更新#2",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": 1220.371527833193,
+"y": -1553.1977148623184
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"dialoguesArr"
+],
+"value": [
+[
+"zkTTthv5ESTI",
+"qLUQfhG0ILRX"
+]
+],
+"valueType": "arrayString",
+"renderType": "reference"
+},
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"projectName"
+],
+"value": [
+"",
+"0"
+],
+"renderType": "input",
+"valueType": "string"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "g51Bn8L1yqRo",
+"name": "批量执行",
+"intro": "输入一个数组，遍历数组并将每一个数组元素作为输入元素，执行工作流。",
+"avatar": "core/workflow/template/loop",
+"flowNodeType": "loop",
+"showStatus": true,
+"position": {
+"x": 2068,
+"y": -3208
+},
+"version": "4811",
+"inputs": [
+{
+"key": "loopInputArray",
+"renderTypeList": [
+"reference"
+],
+"valueType": "arrayString",
+"required": true,
+"label": "数组",
+"value": [
+[
+"VARIABLE_NODE_ID",
+"dialoguesArr"
+]
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "childrenNodeIdList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "arrayString",
+"label": "",
+"value": [
+"hVce85CWE3zp",
+"dkGlTVzLIcv9",
+"tFcqTpLIhvsi",
+"fQPDvwr6U4fi",
+"jQIsvimP2gn6",
+"tI3scgc4Qhkv"
+]
+},
+{
+"key": "nodeWidth",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "number",
+"label": "",
+"value": 2426.093608584096
+},
+{
+"key": "nodeHeight",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "number",
+"label": "",
+"value": 1268.7859255749254
+},
+{
+"key": "loopNodeInputHeight",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "number",
+"label": "",
+"value": 83,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "loopArray",
+"key": "loopArray",
+"label": "workflow:loop_result",
+"type": "static",
+"valueType": "arrayString",
+"description": ""
+}
+]
+},
+{
+"nodeId": "fQPDvwr6U4fi",
+"parentNodeId": "g51Bn8L1yqRo",
+"name": "开始",
+"avatar": "core/workflow/template/loopStart",
+"flowNodeType": "loopStart",
+"showStatus": false,
+"position": {
+"x": 2137.9722440401392,
+"y": -2884.99814402801
+},
+"version": "4811",
+"inputs": [
+{
+"key": "loopStartInput",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"required": true,
+"value": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "loopStartIndex",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "number",
+"label": "workflow:Array_element_index",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "loopStartIndex",
+"key": "loopStartIndex",
+"label": "workflow:Array_element_index",
+"type": "static",
+"valueType": "number",
+"description": ""
+},
+{
+"id": "loopStartInput",
+"key": "loopStartInput",
+"label": "数组元素",
+"type": "static",
+"valueType": "string"
+}
+]
+},
+{
+"nodeId": "jQIsvimP2gn6",
+"parentNodeId": "g51Bn8L1yqRo",
+"name": "结束",
+"avatar": "core/workflow/template/loopEnd",
+"flowNodeType": "loopEnd",
+"showStatus": false,
+"position": {
+"x": 3498.359389020773,
+"y": -1902.97533516188
+},
+"version": "4811",
+"inputs": [
+{
+"key": "loopEndInput",
+"renderTypeList": [
+"reference"
+],
+"valueType": "any",
+"label": "",
+"required": true,
+"value": [
+"VARIABLE_NODE_ID",
+"projectName"
+],
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "tI3scgc4Qhkv",
+"parentNodeId": "g51Bn8L1yqRo",
+"name": "变量更新#3",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": 3361.7161847314537,
+"y": -2298.7511563941944
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"projectName"
+],
+"value": [
+"tFcqTpLIhvsi",
+"ltFCXXlJEztL"
+],
+"valueType": "string",
+"renderType": "reference"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "ihqM5pk7kYAW",
+"name": "判断器#4",
+"intro": "根据一定的条件，执行不同的分支。",
+"avatar": "core/workflow/template/ifelse",
+"flowNodeType": "ifElseNode",
+"showStatus": true,
+"position": {
+"x": 4773.691444361891,
+"y": -2231.052640211729
+},
+"version": "481",
+"inputs": [
+{
+"key": "ifElseList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": [
+{
+"condition": "AND",
+"list": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"projectName"
+],
+"condition": "equalTo",
+"value": "0"
+}
+]
+},
+{
+"condition": "AND",
+"list": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"projectName"
+],
+"condition": "isNotEmpty"
+},
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"projectName"
+],
+"condition": "notEqual",
+"value": "0"
+}
+]
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "ifElseResult",
+"key": "ifElseResult",
+"label": "workflow:judgment_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+},
+{
+"nodeId": "lzWFvVzSC9LK",
+"name": "激活或测试#5",
+"intro": "根据一定的条件，执行不同的分支。",
+"avatar": "core/workflow/template/ifelse",
+"flowNodeType": "ifElseNode",
+"showStatus": true,
+"position": {
+"x": -1903.0814100203634,
+"y": -1612.052506100178
+},
+"version": "481",
+"inputs": [
+{
+"key": "ifElseList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": [
+{
+"condition": "OR",
+"list": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"processType"
+],
+"condition": "equalTo",
+"value": "activation"
+},
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"processType"
+],
+"condition": "equalTo",
+"value": "greet"
+},
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"processType"
+],
+"condition": "equalTo",
+"value": "callBack"
+}
+]
+},
+{
+"condition": "AND",
+"list": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"processType"
+],
+"condition": "equalTo",
+"value": "test"
+}
+]
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "ifElseResult",
+"key": "ifElseResult",
+"label": "workflow:judgment_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+},
+{
+"nodeId": "sFHNLWjiPXG1",
+"name": "调通测试#3",
+"intro": "该模块可以直接回复一段指定的内容。常用于引导、提示。非字符串内容传入时，会转成字符串进行输出。",
+"avatar": "core/workflow/template/reply",
+"flowNodeType": "answerNode",
+"position": {
+"x": -854.5003065348037,
+"y": -1643.5087705650205
+},
+"version": "481",
+"inputs": [
+{
+"key": "text",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"valueType": "any",
+"required": true,
+"label": "回复的内容",
+"description": "common:core.module.input.description.Response content",
+"placeholder": "common:core.module.input.description.Response content",
+"value": "1",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "jn5t3Ts44fQK",
+"name": "workflow:template.ai_chat",
+"intro": "workflow:template.ai_chat_intro",
+"avatar": "core/workflow/template/aiChat",
+"flowNodeType": "chatNode",
+"showStatus": true,
+"position": {
+"x": -830.0003065348037,
+"y": -2660.4456006979613
+},
+"version": "490",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"settingLLMModel",
+"reference"
+],
+"label": "common:core.module.input.label.aiModel",
+"valueType": "string",
+"value": "gpt-4o-mini",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "temperature",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "maxToken",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "isResponseAnswerText",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": true,
+"valueType": "boolean",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatQuoteRole",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "system",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteTemplate",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quotePrompt",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatVision",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatReasoning",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatTopP",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatStopSign",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatResponseFormat",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatJsonSchema",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "common:core.ai.Prompt",
+"description": "core.app.tip.systemPromptTip",
+"placeholder": "core.app.tip.chatNodeSystemPromptTip",
+"value": "将 {{$448745.userChatInput$}} 这段话，稍作改写后，直接输出，保持原本的意思不变。",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "common:core.module.input.label.chat history",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 0,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteQA",
+"renderTypeList": [
+"settingDatasetQuotePrompt"
+],
+"label": "",
+"debugLabel": "知识库引用",
+"description": "",
+"valueType": "datasetQuote",
+"toolDescription": ""
+},
+{
+"key": "fileUrlList",
+"renderTypeList": [
+"reference",
+"input"
+],
+"label": "app:file_quote_link",
+"debugLabel": "文件链接",
+"valueType": "arrayString",
+"value": [
+[
+"448745",
+"userFiles"
+]
+],
+"toolDescription": "",
+"description": "app:workflow.user_file_input_desc"
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "workflow:user_question",
+"toolDescription": "用户问题",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "history",
+"key": "history",
+"required": true,
+"label": "common:core.module.output.label.New context",
+"description": "将本次回复内容拼接上历史记录，作为新的上下文返回",
+"valueType": "chatHistory",
+"valueDesc": "{\n  obj: System | Human | AI;\n  value: string;\n}[]",
+"type": "static"
+},
+{
+"id": "answerText",
+"key": "answerText",
+"required": true,
+"label": "common:core.module.output.label.Ai response content",
+"description": "将在 stream 回复完毕后触发",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "reasoningText",
+"key": "reasoningText",
+"required": false,
+"label": "workflow:reasoning_text",
+"valueType": "string",
+"type": "static",
+"invalid": true,
+"description": ""
+}
+]
+},
+{
+"nodeId": "vtGgI1kzNsOz",
+"name": "变量更新#4",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": -26.80205795922845,
+"y": -1995.3284892459933
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"processType"
+],
+"value": [
+"",
+"null"
+],
+"valueType": "string",
+"renderType": "input"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "znqFzRFbSt9C",
+"name": "流程等待",
+"intro": "让工作流等待指定时间后运行",
+"avatar": "core/workflow/template/sleep",
+"flowNodeType": "pluginModule",
+"showStatus": true,
+"position": {
+"x": -2526.101077525132,
+"y": -1111.5250469054974
+},
+"version": "4817",
+"inputs": [
+{
+"key": "system_forbid_stream",
+"renderTypeList": [
+"switch"
+],
+"valueType": "boolean",
+"label": "禁用流输出",
+"description": "强制设置嵌套运行的应用，均以非流模式运行",
+"value": false,
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"selectedTypeIndex": 0,
+"valueType": "number",
+"canEdit": false,
+"key": "延迟时长",
+"label": "延迟时长",
+"description": "需要暂停的时间，单位毫秒",
+"defaultValue": 1000,
+"list": [
+{
+"label": "",
+"value": ""
+}
+],
+"maxFiles": 5,
+"canSelectFile": true,
+"canSelectImg": true,
+"required": true,
+"toolDescription": "需要暂停的时间，单位毫秒",
+"max": 300000,
+"min": 1,
+"value": 8000,
+"valueDesc": "",
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "result",
+"type": "static",
+"key": "result",
+"valueType": "any",
+"label": "result",
+"description": "",
+"valueDesc": ""
+}
+],
+"pluginId": "community-delay"
+},
+{
+"nodeId": "rwg5bEtZ9SgQ",
+"name": "判断器#5",
+"intro": "根据一定的条件，执行不同的分支。",
+"avatar": "core/workflow/template/ifelse",
+"flowNodeType": "ifElseNode",
+"showStatus": true,
+"position": {
+"x": 5795.6575437487545,
+"y": -2500.0588946345124
+},
+"version": "481",
+"inputs": [
+{
+"key": "ifElseList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": [
+{
+"condition": "AND",
+"list": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"confirmAgain"
+],
+"condition": "equalTo",
+"value": "0"
+}
+]
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "ifElseResult",
+"key": "ifElseResult",
+"label": "workflow:judgment_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+},
+{
+"nodeId": "ckmT4dbDfiDU",
+"name": "workflow:template.ai_chat#5",
+"intro": "workflow:template.ai_chat_intro",
+"avatar": "core/workflow/template/aiChat",
+"flowNodeType": "chatNode",
+"showStatus": true,
+"position": {
+"x": 6881.365608005101,
+"y": -3515.7335366896323
+},
+"version": "490",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"settingLLMModel",
+"reference"
+],
+"label": "common:core.module.input.label.aiModel",
+"valueType": "string",
+"value": "Doubao-1.5-pro-32k",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "temperature",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 1,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "maxToken",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 8000,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "isResponseAnswerText",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": true,
+"valueType": "boolean",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatQuoteRole",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "system",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteTemplate",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quotePrompt",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatVision",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatReasoning",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatTopP",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatStopSign",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatResponseFormat",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatJsonSchema",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "common:core.ai.Prompt",
+"description": "core.app.tip.systemPromptTip",
+"placeholder": "core.app.tip.chatNodeSystemPromptTip",
+"value": "##角色设定\n{{$VARIABLE_NODE_ID.role$}}\n\n##核心任务\n你是一位资深销售，可以很好的应对客户的问题，由于你不知道客户在问什么项目，请用简短的口语方式，让客户再说一下问的是那个项目。\n将话术中所有出现的你改为您\n\n",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "common:core.module.input.label.chat history",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 10,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteQA",
+"renderTypeList": [
+"settingDatasetQuotePrompt"
+],
+"label": "",
+"debugLabel": "知识库引用",
+"description": "",
+"valueType": "datasetQuote",
+"toolDescription": ""
+},
+{
+"key": "fileUrlList",
+"renderTypeList": [
+"reference",
+"input"
+],
+"label": "app:file_quote_link",
+"debugLabel": "文件链接",
+"valueType": "arrayString",
+"value": [
+[
+"448745",
+"userFiles"
+]
+],
+"toolDescription": "",
+"description": "app:workflow.user_file_input_desc"
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "workflow:user_question",
+"toolDescription": "用户问题",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "history",
+"key": "history",
+"required": true,
+"label": "common:core.module.output.label.New context",
+"description": "将本次回复内容拼接上历史记录，作为新的上下文返回",
+"valueType": "chatHistory",
+"valueDesc": "{\n  obj: System | Human | AI;\n  value: string;\n}[]",
+"type": "static"
+},
+{
+"id": "answerText",
+"key": "answerText",
+"required": true,
+"label": "common:core.module.output.label.Ai response content",
+"description": "将在 stream 回复完毕后触发",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "reasoningText",
+"key": "reasoningText",
+"required": false,
+"label": "workflow:reasoning_text",
+"valueType": "string",
+"type": "static",
+"invalid": true,
+"description": ""
+}
+],
+"isFolded": false
+},
+{
+"nodeId": "aEcNlABa4Z4N",
+"name": "workflow:template.ai_chat#5",
+"intro": "workflow:template.ai_chat_intro",
+"avatar": "core/workflow/template/aiChat",
+"flowNodeType": "chatNode",
+"showStatus": true,
+"position": {
+"x": 6881.365608005101,
+"y": -2260.3374464934705
+},
+"version": "490",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"settingLLMModel",
+"reference"
+],
+"label": "common:core.module.input.label.aiModel",
+"valueType": "string",
+"value": "Doubao-1.5-pro-32k",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "temperature",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 1,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "maxToken",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 8000,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "isResponseAnswerText",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": true,
+"valueType": "boolean",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatQuoteRole",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "system",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteTemplate",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quotePrompt",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatVision",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatReasoning",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatTopP",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatStopSign",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatResponseFormat",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatJsonSchema",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "common:core.ai.Prompt",
+"description": "core.app.tip.systemPromptTip",
+"placeholder": "core.app.tip.chatNodeSystemPromptTip",
+"value": "##角色设定\n{{$VARIABLE_NODE_ID.role$}}\n\n##核心任务\n你是一位资深销售，可以很好的应对客户的问题，由于你还是不知道客户在问的项目，请用简短的口语方式跟客户说，一会儿电话联系客户。\n将话术中所有出现的你改为您",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "common:core.module.input.label.chat history",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 10,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteQA",
+"renderTypeList": [
+"settingDatasetQuotePrompt"
+],
+"label": "",
+"debugLabel": "知识库引用",
+"description": "",
+"valueType": "datasetQuote",
+"toolDescription": ""
+},
+{
+"key": "fileUrlList",
+"renderTypeList": [
+"reference",
+"input"
+],
+"label": "app:file_quote_link",
+"debugLabel": "文件链接",
+"valueType": "arrayString",
+"value": [
+[
+"448745",
+"userFiles"
+]
+],
+"toolDescription": "",
+"description": "app:workflow.user_file_input_desc"
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "workflow:user_question",
+"toolDescription": "用户问题",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "history",
+"key": "history",
+"required": true,
+"label": "common:core.module.output.label.New context",
+"description": "将本次回复内容拼接上历史记录，作为新的上下文返回",
+"valueType": "chatHistory",
+"valueDesc": "{\n  obj: System | Human | AI;\n  value: string;\n}[]",
+"type": "static"
+},
+{
+"id": "answerText",
+"key": "answerText",
+"required": true,
+"label": "common:core.module.output.label.Ai response content",
+"description": "将在 stream 回复完毕后触发",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "reasoningText",
+"key": "reasoningText",
+"required": false,
+"label": "workflow:reasoning_text",
+"valueType": "string",
+"type": "static",
+"invalid": true,
+"description": ""
+}
+],
+"isFolded": false
+},
+{
+"nodeId": "tTaedrk67ylJ",
+"name": "变量更新#5",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": 7925.946222941831,
+"y": -3195.3248871499036
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"confirmAgain"
+],
+"value": [
+"",
+"1"
+],
+"valueType": "string",
+"renderType": "input"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "yDO586wQ8hbr",
+"name": "变量更新#5",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": 7828.899708266413,
+"y": -1839.1533560941082
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"confirmAgain"
+],
+"value": [
+"",
+"0"
+],
+"valueType": "string",
+"renderType": "input"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "wjQPQH188Dmn",
+"name": "workflow:template.ai_chat#6",
+"intro": "workflow:template.ai_chat_intro",
+"avatar": "core/workflow/template/aiChat",
+"flowNodeType": "chatNode",
+"showStatus": true,
+"position": {
+"x": 2071.7674687928316,
+"y": 1206.9467873764156
+},
+"version": "490",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"settingLLMModel",
+"reference"
+],
+"label": "common:core.module.input.label.aiModel",
+"valueType": "string",
+"value": "Doubao-1.5-pro-32k",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "temperature",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 1,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "maxToken",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 8000,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "isResponseAnswerText",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": true,
+"valueType": "boolean",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatQuoteRole",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "system",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteTemplate",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quotePrompt",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatVision",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatReasoning",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatTopP",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatStopSign",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatResponseFormat",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatJsonSchema",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "common:core.ai.Prompt",
+"description": "core.app.tip.systemPromptTip",
+"placeholder": "core.app.tip.chatNodeSystemPromptTip",
+"value": "##角色设定\n{{$VARIABLE_NODE_ID.role$}}\n\n##核心任务\n你是一位资深销售，需要处理客户发送的负面信息。当用户发送包含辱骂、骚扰或表达强烈厌烦情绪的内容时，请按照以下规则回应：  \n\t1. 主要目标：用口语化表达化解冲突，避免激化矛盾  \n2. 适用场景：用户消息包含以下任意特征时触发  \n  \t - 辱骂：包含人身攻击或侮辱性语言（如\"蠢货\"、\"骗子\"）  \n   \t- 骚扰：重复发送无关内容或性暗示  \n   \t- 厌烦：明确表示\"滚开\"、\"别烦我\"等拒绝沟通  \n回应模板示例：\n[辱骂情况]\n嗯，理解，抱歉打扰到您了，有需要咱随时联系。\n\n[骚扰情况] \n您刚才的玩笑话，我就当是长辈对小辈的关心啦~ 您看咱聊聊您感兴趣的项目呀。\n\n[厌烦情况]\n抱歉打扰到您了，有需要咱随时联系。\n\n将话术中所有出现的你改为您",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "common:core.module.input.label.chat history",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 10,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteQA",
+"renderTypeList": [
+"settingDatasetQuotePrompt"
+],
+"label": "",
+"debugLabel": "知识库引用",
+"description": "",
+"valueType": "datasetQuote",
+"toolDescription": ""
+},
+{
+"key": "fileUrlList",
+"renderTypeList": [
+"reference",
+"input"
+],
+"label": "app:file_quote_link",
+"debugLabel": "文件链接",
+"valueType": "arrayString",
+"value": [
+[
+"448745",
+"userFiles"
+]
+],
+"toolDescription": "",
+"description": "app:workflow.user_file_input_desc"
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "workflow:user_question",
+"toolDescription": "用户问题",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "history",
+"key": "history",
+"required": true,
+"label": "common:core.module.output.label.New context",
+"description": "将本次回复内容拼接上历史记录，作为新的上下文返回",
+"valueType": "chatHistory",
+"valueDesc": "{\n  obj: System | Human | AI;\n  value: string;\n}[]",
+"type": "static"
+},
+{
+"id": "answerText",
+"key": "answerText",
+"required": true,
+"label": "common:core.module.output.label.Ai response content",
+"description": "将在 stream 回复完毕后触发",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "reasoningText",
+"key": "reasoningText",
+"required": false,
+"label": "workflow:reasoning_text",
+"valueType": "string",
+"type": "static",
+"invalid": true,
+"description": ""
+}
+],
+"isFolded": false
+},
+{
+"nodeId": "vayWGgFNEx7q",
+"name": "负面信息#2",
+"intro": "可以发出一个 HTTP 请求，实现更为复杂的操作（联网搜索、数据库查询等）",
+"avatar": "core/workflow/template/httpRequest",
+"flowNodeType": "httpRequest468",
+"showStatus": true,
+"position": {
+"x": -361.4849066408806,
+"y": 547.3528817950089
+},
+"version": "481",
+"inputs": [
+{
+"key": "system_addInputParam",
+"renderTypeList": [
+"addInputParam"
+],
+"valueType": "dynamic",
+"label": "",
+"required": false,
+"description": "common:core.module.input.description.HTTP Dynamic Input",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpMethod",
+"renderTypeList": [
+"custom"
+],
+"valueType": "string",
+"label": "",
+"value": "POST",
+"required": true,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpTimeout",
+"renderTypeList": [
+"custom"
+],
+"valueType": "number",
+"label": "",
+"value": 30,
+"min": 5,
+"max": 600,
+"required": true,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpReqUrl",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "string",
+"label": "",
+"description": "common:core.module.input.description.Http Request Url",
+"placeholder": "https://api.ai.com/getInventory",
+"required": false,
+"value": "https://lbb-gw.tojoycloud.com/tbh-intelligence/chat/emotion",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpHeader",
+"renderTypeList": [
+"custom"
+],
+"valueType": "any",
+"value": [
+{
+"key": "token",
+"type": "string",
+"value": "oniomixydzvutdxqkvwcumnitrzwfvbl"
+},
+{
+"key": "Content-Type",
+"type": "string",
+"value": "application/json;charset=utf-8"
+}
+],
+"label": "",
+"description": "common:core.module.input.description.Http Request Header",
+"placeholder": "common:core.module.input.description.Http Request Header",
+"required": false,
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpParams",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"value": [],
+"label": "",
+"required": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpJsonBody",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"value": " {\r\n    \"user\": \"{{accountNo}}\",  \r\n     \"nickName\":\"{{nickName}}\",\n     \"nickId\":\"{{nickId}}\"\n\r\n  }",
+"label": "",
+"required": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpFormBody",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"value": [],
+"label": "",
+"required": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "system_httpContentType",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "string",
+"value": "json",
+"label": "",
+"required": false,
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "error",
+"key": "error",
+"label": "workflow:request_error",
+"description": "HTTP请求错误信息，成功时返回空",
+"valueType": "object",
+"type": "static"
+},
+{
+"id": "httpRawResponse",
+"key": "httpRawResponse",
+"required": true,
+"label": "workflow:raw_response",
+"description": "HTTP请求的原始响应。只能接受字符串或JSON类型响应数据。",
+"valueType": "any",
+"type": "static"
+},
+{
+"id": "system_addOutputParam",
+"key": "system_addOutputParam",
+"type": "dynamic",
+"valueType": "dynamic",
+"label": "输出字段提取",
+"customFieldConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectApp",
+"selectDataset"
+],
+"showDescription": false,
+"showDefaultValue": false
+},
+"description": "可以通过 JSONPath 语法来提取响应值中的指定字段",
+"valueDesc": ""
+}
+]
+},
+{
+"nodeId": "vd3nDoJ6eQT5",
+"name": "知识库搜索#3",
+"intro": "调用“语义检索”和“全文检索”能力，从“知识库”中查找可能与问题相关的参考内容",
+"avatar": "core/workflow/template/datasetSearch",
+"flowNodeType": "datasetSearchNode",
+"showStatus": true,
+"position": {
+"x": 552.9996934651963,
+"y": 690.2515359976824
+},
+"version": "481",
+"inputs": [
+{
+"key": "datasets",
+"renderTypeList": [
+"selectDataset",
+"reference"
+],
+"label": "选择知识库",
+"value": [],
+"valueType": "selectDataset",
+"required": true,
+"valueDesc": "{\n  datasetId: string;\n}[]",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "similarity",
+"renderTypeList": [
+"selectDatasetParamsModal"
+],
+"label": "",
+"value": 0.5,
+"valueType": "number",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "limit",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": 1500,
+"valueType": "number",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "searchMode",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "embedding",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "embeddingWeight",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0.5,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "usingReRank",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "rerankModel",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"value": "gpt-4o"
+},
+{
+"key": "rerankWeight",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0.5,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "datasetSearchUsingExtensionQuery",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "datasetSearchExtensionModel",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"value": "gpt-4o"
+},
+{
+"key": "datasetSearchExtensionBg",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "authTmbId",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "用户问题",
+"toolDescription": "需要检索的内容",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": ""
+},
+{
+"key": "collectionFilterMatch",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"label": "集合元数据过滤",
+"valueType": "string",
+"isPro": true,
+"description": "workflow:filter_description",
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "quoteQA",
+"key": "quoteQA",
+"label": "common:core.module.Dataset quote.label",
+"description": "特殊数组格式，搜索结果为空时，返回空数组。",
+"type": "static",
+"valueType": "datasetQuote",
+"valueDesc": "{\n  id: string;\n  datasetId: string;\n  collectionId: string;\n  sourceName: string;\n  sourceId?: string;\n  q: string;\n  a: string\n}[]"
+}
+]
+},
+{
+"nodeId": "iOTQB7O5REM7",
+"name": "判断器#6",
+"intro": "根据一定的条件，执行不同的分支。",
+"avatar": "core/workflow/template/ifelse",
+"flowNodeType": "ifElseNode",
+"showStatus": true,
+"position": {
+"x": 1293.0667792119261,
+"y": 827.9467873764155
+},
+"version": "481",
+"inputs": [
+{
+"key": "ifElseList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": [
+{
+"condition": "AND",
+"list": [
+{
+"variable": [
+"x64jvTq8s2qT",
+"quoteQA"
+],
+"condition": "isNotEmpty"
+}
+]
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "ifElseResult",
+"key": "ifElseResult",
+"label": "workflow:judgment_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+},
+{
+"nodeId": "cg1IncFagE5I",
+"name": "workflow:template.ai_chat#6",
+"intro": "workflow:template.ai_chat_intro",
+"avatar": "core/workflow/template/aiChat",
+"flowNodeType": "chatNode",
+"showStatus": true,
+"position": {
+"x": 2255.270980432533,
+"y": 195.45455625007617
+},
+"version": "490",
+"inputs": [
+{
+"key": "model",
+"renderTypeList": [
+"settingLLMModel",
+"reference"
+],
+"label": "common:core.module.input.label.aiModel",
+"valueType": "string",
+"value": "Doubao-1.5-pro-32k",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "temperature",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 0,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "maxToken",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"value": 8000,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "isResponseAnswerText",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": true,
+"valueType": "boolean",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatQuoteRole",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"value": "system",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteTemplate",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quotePrompt",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatVision",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": false,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatReasoning",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "boolean",
+"value": true,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatTopP",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "number",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatStopSign",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatResponseFormat",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "aiChatJsonSchema",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"valueType": "string",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "systemPrompt",
+"renderTypeList": [
+"textarea",
+"reference"
+],
+"max": 3000,
+"valueType": "string",
+"label": "common:core.ai.Prompt",
+"description": "core.app.tip.systemPromptTip",
+"placeholder": "core.app.tip.chatNodeSystemPromptTip",
+"value": "##角色设定\n{{$VARIABLE_NODE_ID.role$}}\n\n##核心任务\n1. 用口语化的表达方式运用知识库的引用内容进行回复\n2. 回答控制在100字以内\n3. 禁止出现以下内容：  \n   - \"根据知识库\"、\"如文档所述\"等引用提示  \n   - “我们的项目”\n   - “投资”\n   - \"您还有其他问题吗？\"等客服话术  \n4. 所有项目要说我们加速孵化的项目\n5. 你在微信中与客户沟通\n6. 将话术中所有出现的投资改为合作\n7. 禁止出现任何项目符号、特殊符号、Markdown符号 如：###、**、-等\n8. 将话术中所有出现的你改为您",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "history",
+"renderTypeList": [
+"numberInput",
+"reference"
+],
+"valueType": "chatHistory",
+"label": "common:core.module.input.label.chat history",
+"description": "workflow:max_dialog_rounds",
+"required": true,
+"min": 0,
+"max": 50,
+"value": 10,
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "quoteQA",
+"renderTypeList": [
+"settingDatasetQuotePrompt"
+],
+"label": "",
+"debugLabel": "知识库引用",
+"description": "",
+"valueType": "datasetQuote",
+"value": [
+"x64jvTq8s2qT",
+"quoteQA"
+],
+"toolDescription": ""
+},
+{
+"key": "fileUrlList",
+"renderTypeList": [
+"reference",
+"input"
+],
+"label": "app:file_quote_link",
+"debugLabel": "文件链接",
+"valueType": "arrayString",
+"value": [
+[
+"448745",
+"userFiles"
+]
+],
+"toolDescription": "",
+"description": "app:workflow.user_file_input_desc"
+},
+{
+"key": "userChatInput",
+"renderTypeList": [
+"reference",
+"textarea"
+],
+"valueType": "string",
+"label": "workflow:user_question",
+"toolDescription": "用户问题",
+"required": true,
+"value": [
+"448745",
+"userChatInput"
+],
+"debugLabel": ""
+}
+],
+"outputs": [
+{
+"id": "history",
+"key": "history",
+"required": true,
+"label": "common:core.module.output.label.New context",
+"description": "将本次回复内容拼接上历史记录，作为新的上下文返回",
+"valueType": "chatHistory",
+"valueDesc": "{\n  obj: System | Human | AI;\n  value: string;\n}[]",
+"type": "static"
+},
+{
+"id": "answerText",
+"key": "answerText",
+"required": true,
+"label": "common:core.module.output.label.Ai response content",
+"description": "将在 stream 回复完毕后触发",
+"valueType": "string",
+"type": "static"
+},
+{
+"id": "reasoningText",
+"key": "reasoningText",
+"required": false,
+"label": "workflow:reasoning_text",
+"valueType": "string",
+"type": "static",
+"invalid": true,
+"description": ""
+}
+],
+"isFolded": false
+},
+{
+"nodeId": "gSbPYTA5JEFf",
+"name": "变量更新#7",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": 2127.6672273617532,
+"y": -3970.2930537183306
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"noticeDate"
+],
+"value": [
+"oClIZtN4Q8oT",
+"result"
+],
+"valueType": "string",
+"renderType": "reference"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "eAW42fKc7QKM",
+"name": "变量更新#8",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": -1749.5814100203634,
+"y": -206.44254371936645
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"currentDate"
+],
+"value": [
+"eLPcNkkesq0R",
+"result"
+],
+"valueType": "string",
+"renderType": "reference"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "eLPcNkkesq0R",
+"name": "获取当前日期",
+"intro": "",
+"avatar": "core/app/type/pluginFill",
+"flowNodeType": "pluginModule",
+"showStatus": true,
+"position": {
+"x": -2462.133778187101,
+"y": -441.3035267460343
+},
+"version": "67e0dcfab119ccd1af4cf049",
+"inputs": [
+{
+"key": "system_forbid_stream",
+"renderTypeList": [
+"switch"
+],
+"valueType": "boolean",
+"label": "禁用流输出",
+"description": "强制设置嵌套运行的应用，均以非流模式运行",
+"value": false,
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "result",
+"type": "static",
+"key": "result",
+"valueType": "string",
+"label": "result",
+"description": "输出日期",
+"valueDesc": ""
+}
+],
+"pluginId": "67e0daaf5c02d1d5cdee33ff"
+},
+{
+"nodeId": "oClIZtN4Q8oT",
+"name": "获取当前日期#2",
+"intro": "",
+"avatar": "core/app/type/pluginFill",
+"flowNodeType": "pluginModule",
+"showStatus": true,
+"position": {
+"x": 1904.904011309575,
+"y": -3578.445738483316
+},
+"version": "67e0dcfab119ccd1af4cf049",
+"inputs": [
+{
+"key": "system_forbid_stream",
+"renderTypeList": [
+"switch"
+],
+"valueType": "boolean",
+"label": "禁用流输出",
+"description": "强制设置嵌套运行的应用，均以非流模式运行",
+"value": false,
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "result",
+"type": "static",
+"key": "result",
+"valueType": "string",
+"label": "result",
+"description": "输出日期",
+"valueDesc": ""
+}
+],
+"pluginId": "67e0daaf5c02d1d5cdee33ff",
+"isFolded": false
+},
+{
+"nodeId": "mIjZm8afOGnx",
+"name": "代码运行#3高意向",
+"intro": "执行一段简单的脚本代码，通常用于进行复杂的数据处理。",
+"avatar": "core/workflow/template/codeRun",
+"flowNodeType": "code",
+"showStatus": true,
+"position": {
+"x": 524.9006200230839,
+"y": -2780.4898305855554
+},
+"version": "482",
+"inputs": [
+{
+"key": "system_addInputParam",
+"renderTypeList": [
+"addInputParam"
+],
+"valueType": "dynamic",
+"label": "",
+"required": false,
+"description": "workflow:these_variables_will_be_input_parameters_for_code_execution",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"valueDesc": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"key": "codeType",
+"renderTypeList": [
+"hidden"
+],
+"label": "",
+"value": "js",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"valueType": "string"
+},
+{
+"key": "code",
+"renderTypeList": [
+"custom"
+],
+"label": "",
+"value": "function main({data1,data2}){\n    \n    let comparisonResult;\n    if (data1 === data2) {\n        comparisonResult = 1;\n    } else {\n        comparisonResult = 0;\n    }\n    return {result:comparisonResult}\n}",
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": "",
+"valueType": "string"
+},
+{
+"renderTypeList": [
+"reference"
+],
+"valueType": "string",
+"canEdit": true,
+"key": "data1",
+"label": "data1",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"required": true,
+"value": [
+"VARIABLE_NODE_ID",
+"noticeDate"
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+},
+{
+"renderTypeList": [
+"reference"
+],
+"valueType": "string",
+"canEdit": true,
+"key": "data2",
+"label": "data2",
+"customInputConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": true
+},
+"required": true,
+"value": [
+"VARIABLE_NODE_ID",
+"currentDate"
+]
+}
+],
+"outputs": [
+{
+"id": "system_rawResponse",
+"key": "system_rawResponse",
+"label": "workflow:full_response_data",
+"valueType": "object",
+"type": "static",
+"description": ""
+},
+{
+"id": "error",
+"key": "error",
+"label": "workflow:execution_error",
+"description": "代码运行错误信息，成功时返回空",
+"valueType": "object",
+"type": "static"
+},
+{
+"id": "system_addOutputParam",
+"key": "system_addOutputParam",
+"type": "dynamic",
+"valueType": "dynamic",
+"label": "",
+"customFieldConfig": {
+"selectValueTypeList": [
+"string",
+"number",
+"boolean",
+"object",
+"arrayString",
+"arrayNumber",
+"arrayBoolean",
+"arrayObject",
+"arrayAny",
+"any",
+"chatHistory",
+"datasetQuote",
+"dynamic",
+"selectDataset",
+"selectApp"
+],
+"showDescription": false,
+"showDefaultValue": false
+},
+"description": "将代码中 return 的对象作为输出，传递给后续的节点。变量名需要对应 return 的 key",
+"valueDesc": ""
+},
+{
+"id": "qLUQfhG0ILRX",
+"type": "dynamic",
+"key": "result",
+"valueType": "string",
+"label": "result",
+"valueDesc": "",
+"description": ""
+}
+]
+},
+{
+"nodeId": "zeAgCp999pVb",
+"name": "变量更新#9",
+"intro": "可以更新指定节点的输出值或更新全局变量",
+"avatar": "core/workflow/template/variableUpdate",
+"flowNodeType": "variableUpdate",
+"showStatus": false,
+"position": {
+"x": 1129.29534781419,
+"y": -2370.1538603279246
+},
+"version": "481",
+"inputs": [
+{
+"key": "updateList",
+"valueType": "any",
+"label": "",
+"renderTypeList": [
+"hidden"
+],
+"value": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"sameTime"
+],
+"value": [
+"mIjZm8afOGnx",
+"qLUQfhG0ILRX"
+],
+"valueType": "string",
+"renderType": "reference"
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": []
+},
+{
+"nodeId": "lioNuzm2wz7N",
+"name": "判断器#7",
+"intro": "根据一定的条件，执行不同的分支。",
+"avatar": "core/workflow/template/ifelse",
+"flowNodeType": "ifElseNode",
+"showStatus": true,
+"position": {
+"x": 1184.371527833193,
+"y": -2840.894385568927
+},
+"version": "481",
+"inputs": [
+{
+"key": "ifElseList",
+"renderTypeList": [
+"hidden"
+],
+"valueType": "any",
+"label": "",
+"value": [
+{
+"condition": "OR",
+"list": [
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"noticeDate"
+],
+"condition": "isEmpty"
+},
+{
+"variable": [
+"VARIABLE_NODE_ID",
+"sameTime"
+],
+"condition": "equalTo",
+"value": "0"
+}
+]
+}
+],
+"valueDesc": "",
+"description": "",
+"debugLabel": "",
+"toolDescription": ""
+}
+],
+"outputs": [
+{
+"id": "ifElseResult",
+"key": "ifElseResult",
+"label": "workflow:judgment_result",
+"valueType": "string",
+"type": "static",
+"description": ""
+}
+]
+}
+],
+"edges": [
+{
+"source": "dT1wVEwObdVg",
+"target": "ivmHqG9kkBrT",
+"sourceHandle": "dT1wVEwObdVg-source-right",
+"targetHandle": "ivmHqG9kkBrT-target-left"
+},
+{
+"source": "ivmHqG9kkBrT",
+"target": "rh89rLavcO4E",
+"sourceHandle": "ivmHqG9kkBrT-source-IF",
+"targetHandle": "rh89rLavcO4E-target-left"
+},
+{
+"source": "ivmHqG9kkBrT",
+"target": "a5uiaEgOM4WO",
+"sourceHandle": "ivmHqG9kkBrT-source-ELSE",
+"targetHandle": "a5uiaEgOM4WO-target-left"
+},
+{
+"source": "rnwjrpJfE6aH",
+"target": "nwPJXGoYdE05",
+"sourceHandle": "rnwjrpJfE6aH-source-right",
+"targetHandle": "nwPJXGoYdE05-target-left"
+},
+{
+"source": "nwPJXGoYdE05",
+"target": "wNuXxATuX5xq",
+"sourceHandle": "nwPJXGoYdE05-source-right",
+"targetHandle": "wNuXxATuX5xq-target-left"
+},
+{
+"source": "wNuXxATuX5xq",
+"target": "dT1wVEwObdVg",
+"sourceHandle": "wNuXxATuX5xq-source-sdfa",
+"targetHandle": "dT1wVEwObdVg-target-left"
+},
+{
+"source": "wNuXxATuX5xq",
+"target": "zkTTthv5ESTI",
+"sourceHandle": "wNuXxATuX5xq-source-wqre",
+"targetHandle": "zkTTthv5ESTI-target-left"
+},
+{
+"source": "zkTTthv5ESTI",
+"target": "ldqeU1xzik0X",
+"sourceHandle": "zkTTthv5ESTI-source-right",
+"targetHandle": "ldqeU1xzik0X-target-left"
+},
+{
+"source": "ldqeU1xzik0X",
+"target": "g51Bn8L1yqRo",
+"sourceHandle": "ldqeU1xzik0X-source-right",
+"targetHandle": "g51Bn8L1yqRo-target-left"
+},
+{
+"source": "hVce85CWE3zp",
+"target": "dkGlTVzLIcv9",
+"sourceHandle": "hVce85CWE3zp-source-right",
+"targetHandle": "dkGlTVzLIcv9-target-left"
+},
+{
+"source": "dkGlTVzLIcv9",
+"target": "tFcqTpLIhvsi",
+"sourceHandle": "dkGlTVzLIcv9-source-ELSE",
+"targetHandle": "tFcqTpLIhvsi-target-left"
+},
+{
+"source": "tI3scgc4Qhkv",
+"target": "jQIsvimP2gn6",
+"sourceHandle": "tI3scgc4Qhkv-source-bottom",
+"targetHandle": "jQIsvimP2gn6-target-left"
+},
+{
+"source": "fQPDvwr6U4fi",
+"target": "hVce85CWE3zp",
+"sourceHandle": "fQPDvwr6U4fi-source-right",
+"targetHandle": "hVce85CWE3zp-target-left"
+},
+{
+"source": "g51Bn8L1yqRo",
+"target": "ihqM5pk7kYAW",
+"sourceHandle": "g51Bn8L1yqRo-source-right",
+"targetHandle": "ihqM5pk7kYAW-target-left"
+},
+{
+"source": "ihqM5pk7kYAW",
+"target": "azV2kbvbYuez",
+"sourceHandle": "ihqM5pk7kYAW-source-ELSE IF 1",
+"targetHandle": "azV2kbvbYuez-target-left"
+},
+{
+"source": "tFcqTpLIhvsi",
+"target": "tI3scgc4Qhkv",
+"sourceHandle": "tFcqTpLIhvsi-source-bottom",
+"targetHandle": "tI3scgc4Qhkv-target-top"
+},
+{
+"source": "lzWFvVzSC9LK",
+"target": "sFHNLWjiPXG1",
+"sourceHandle": "lzWFvVzSC9LK-source-ELSE IF 1",
+"targetHandle": "sFHNLWjiPXG1-target-left"
+},
+{
+"source": "lzWFvVzSC9LK",
+"target": "jn5t3Ts44fQK",
+"sourceHandle": "lzWFvVzSC9LK-source-IF",
+"targetHandle": "jn5t3Ts44fQK-target-left"
+},
+{
+"source": "lzWFvVzSC9LK",
+"target": "rnwjrpJfE6aH",
+"sourceHandle": "lzWFvVzSC9LK-source-ELSE",
+"targetHandle": "rnwjrpJfE6aH-target-left"
+},
+{
+"source": "jn5t3Ts44fQK",
+"target": "vtGgI1kzNsOz",
+"sourceHandle": "jn5t3Ts44fQK-source-right",
+"targetHandle": "vtGgI1kzNsOz-target-left"
+},
+{
+"source": "sFHNLWjiPXG1",
+"target": "vtGgI1kzNsOz",
+"sourceHandle": "sFHNLWjiPXG1-source-right",
+"targetHandle": "vtGgI1kzNsOz-target-left"
+},
+{
+"source": "wNuXxATuX5xq",
+"target": "dT1wVEwObdVg",
+"sourceHandle": "wNuXxATuX5xq-source-kHYT4lUV2MaG",
+"targetHandle": "dT1wVEwObdVg-target-left"
+},
+{
+"source": "448745",
+"target": "znqFzRFbSt9C",
+"sourceHandle": "448745-source-right",
+"targetHandle": "znqFzRFbSt9C-target-left"
+},
+{
+"source": "znqFzRFbSt9C",
+"target": "lzWFvVzSC9LK",
+"sourceHandle": "znqFzRFbSt9C-source-right",
+"targetHandle": "lzWFvVzSC9LK-target-left"
+},
+{
+"source": "ihqM5pk7kYAW",
+"target": "rwg5bEtZ9SgQ",
+"sourceHandle": "ihqM5pk7kYAW-source-IF",
+"targetHandle": "rwg5bEtZ9SgQ-target-left"
+},
+{
+"source": "rwg5bEtZ9SgQ",
+"target": "ckmT4dbDfiDU",
+"sourceHandle": "rwg5bEtZ9SgQ-source-IF",
+"targetHandle": "ckmT4dbDfiDU-target-left"
+},
+{
+"source": "rwg5bEtZ9SgQ",
+"target": "aEcNlABa4Z4N",
+"sourceHandle": "rwg5bEtZ9SgQ-source-ELSE",
+"targetHandle": "aEcNlABa4Z4N-target-left"
+},
+{
+"source": "ckmT4dbDfiDU",
+"target": "tTaedrk67ylJ",
+"sourceHandle": "ckmT4dbDfiDU-source-right",
+"targetHandle": "tTaedrk67ylJ-target-left"
+},
+{
+"source": "aEcNlABa4Z4N",
+"target": "yDO586wQ8hbr",
+"sourceHandle": "aEcNlABa4Z4N-source-right",
+"targetHandle": "yDO586wQ8hbr-target-left"
+},
+{
+"source": "wNuXxATuX5xq",
+"target": "vayWGgFNEx7q",
+"sourceHandle": "wNuXxATuX5xq-source-jAHIz73GtWUv",
+"targetHandle": "vayWGgFNEx7q-target-top"
+},
+{
+"source": "wNuXxATuX5xq",
+"target": "vd3nDoJ6eQT5",
+"sourceHandle": "wNuXxATuX5xq-source-jAHIz73GtWUv",
+"targetHandle": "vd3nDoJ6eQT5-target-top"
+},
+{
+"source": "vd3nDoJ6eQT5",
+"target": "iOTQB7O5REM7",
+"sourceHandle": "vd3nDoJ6eQT5-source-right",
+"targetHandle": "iOTQB7O5REM7-target-left"
+},
+{
+"source": "iOTQB7O5REM7",
+"target": "cg1IncFagE5I",
+"sourceHandle": "iOTQB7O5REM7-source-IF",
+"targetHandle": "cg1IncFagE5I-target-left"
+},
+{
+"source": "iOTQB7O5REM7",
+"target": "wjQPQH188Dmn",
+"sourceHandle": "iOTQB7O5REM7-source-ELSE",
+"targetHandle": "wjQPQH188Dmn-target-left"
+},
+{
+"source": "448745",
+"target": "eLPcNkkesq0R",
+"sourceHandle": "448745-source-right",
+"targetHandle": "eLPcNkkesq0R-target-left"
+},
+{
+"source": "eLPcNkkesq0R",
+"target": "eAW42fKc7QKM",
+"sourceHandle": "eLPcNkkesq0R-source-right",
+"targetHandle": "eAW42fKc7QKM-target-left"
+},
+{
+"source": "c0bYEbxvrcCk",
+"target": "oClIZtN4Q8oT",
+"sourceHandle": "c0bYEbxvrcCk-source-right",
+"targetHandle": "oClIZtN4Q8oT-target-left"
+},
+{
+"source": "oClIZtN4Q8oT",
+"target": "gSbPYTA5JEFf",
+"sourceHandle": "oClIZtN4Q8oT-source-top",
+"targetHandle": "gSbPYTA5JEFf-target-bottom"
+},
+{
+"source": "ivmHqG9kkBrT",
+"target": "mIjZm8afOGnx",
+"sourceHandle": "ivmHqG9kkBrT-source-IF",
+"targetHandle": "mIjZm8afOGnx-target-bottom"
+},
+{
+"source": "wNuXxATuX5xq",
+"target": "mIjZm8afOGnx",
+"sourceHandle": "wNuXxATuX5xq-source-wqre",
+"targetHandle": "mIjZm8afOGnx-target-bottom"
+},
+{
+"source": "wNuXxATuX5xq",
+"target": "mIjZm8afOGnx",
+"sourceHandle": "wNuXxATuX5xq-source-kHYT4lUV2MaG",
+"targetHandle": "mIjZm8afOGnx-target-bottom"
+},
+{
+"source": "mIjZm8afOGnx",
+"target": "zeAgCp999pVb",
+"sourceHandle": "mIjZm8afOGnx-source-right",
+"targetHandle": "zeAgCp999pVb-target-left"
+},
+{
+"source": "zeAgCp999pVb",
+"target": "lioNuzm2wz7N",
+"sourceHandle": "zeAgCp999pVb-source-top",
+"targetHandle": "lioNuzm2wz7N-target-bottom"
+},
+{
+"source": "lioNuzm2wz7N",
+"target": "c0bYEbxvrcCk",
+"sourceHandle": "lioNuzm2wz7N-source-IF",
+"targetHandle": "c0bYEbxvrcCk-target-bottom"
+}
+],
+"chatConfig": {
+"variables": [
+{
+"id": "f24nso",
+"key": "dialogueCount",
+"label": "dialogueCount",
+"type": "custom",
+"description": "记录对话的轮数每次对话+1",
+"required": false,
+"valueType": "number",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+],
+"icon": "core/workflow/inputType/customVariable"
+},
+{
+"id": "mhc4mj",
+"key": "role",
+"label": "role",
+"type": "custom",
+"description": "角色设定",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "kexym8",
+"key": "nickName",
+"label": "nickName",
+"type": "custom",
+"description": "聊天好友昵称",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "flyqja",
+"key": "accountNo",
+"label": "accountNo",
+"type": "custom",
+"description": "oaid",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "6iki0u",
+"key": "nickId",
+"label": "nickId",
+"type": "custom",
+"description": "",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "5j8x6o",
+"key": "dialogues",
+"label": "dialogues",
+"type": "custom",
+"description": "客户对话",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "92uieg",
+"key": "dialoguesArr",
+"label": "dialoguesArr",
+"type": "custom",
+"description": "存客户对话的数组",
+"required": false,
+"valueType": "arrayString",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "b9ffro",
+"key": "projectName",
+"label": "projectName",
+"type": "custom",
+"description": "项目名称",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "zgqbbo",
+"key": "processType",
+"label": "processType",
+"type": "custom",
+"description": "processType  流程类型   test  (测试)     activation （主动激活）",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "uzumbd",
+"key": "confirmAgain",
+"label": "confirmAgain",
+"type": "custom",
+"description": "再次确认项目名称",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "0",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "iirlqs",
+"key": "noticeDate",
+"label": "noticeDate",
+"type": "custom",
+"description": "通知日期",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "8v7lwb",
+"key": "currentDate",
+"label": "currentDate",
+"type": "custom",
+"description": "当前日期",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+]
+},
+{
+"id": "5o1ub8",
+"key": "sameTime",
+"label": "sameTime",
+"type": "custom",
+"description": "判断是否相同时间",
+"required": false,
+"valueType": "string",
+"list": [
+{
+"value": "",
+"label": ""
+}
+],
+"defaultValue": "0",
+"enums": [
+{
+"value": "",
+"label": ""
+}
+],
+"icon": "core/workflow/inputType/input"
+}
+],
+"whisperConfig": {
+"open": false,
+"autoSend": false,
+"autoTTSResponse": false
+},
+"scheduledTriggerConfig": {
+"cronString": "0 0 * * *",
+"timezone": "Asia/Shanghai",
+"defaultPrompt": ""
+},
+"_id": "672ae56b41541f3ae99841ca"
+}
+}

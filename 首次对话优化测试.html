@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首次对话不清空插件测试</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #1890ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .panel {
+            margin-bottom: 20px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .panel-title {
+            background-color: #f7f7f7;
+            padding: 12px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .panel-content {
+            padding: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        .output-container {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 0;
+        }
+        .info-box {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>首次对话不清空插件测试</h1>
+        
+        <div class="info-box">
+            <p><strong>优化说明：</strong>该版本在首次对话时不会清空消息历史和计数，只有在达到消息数量阈值或时间阈值时才会清空。</p>
+            <p>测试时可以先设置对话轮次为0（首次对话），发送一条消息后，系统会回复但不清空消息历史，在后续测试中可以观察消息积累效果。</p>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">模拟输入</div>
+            <div class="panel-content">
+                <div class="form-group">
+                    <label for="userMessage">用户消息：</label>
+                    <input type="text" id="userMessage" value="你好" placeholder="输入用户消息">
+                </div>
+                <div class="form-group">
+                    <label for="messageHistory">消息历史：</label>
+                    <textarea id="messageHistory" placeholder="输入JSON格式的消息历史数组，如: []">[]</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="lastMessageTime">上一条消息时间戳：</label>
+                    <input type="text" id="lastMessageTime" value="0" placeholder="输入时间戳，如: 0">
+                </div>
+                <div class="form-group">
+                    <label for="messageCount">累积消息数：</label>
+                    <input type="number" id="messageCount" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="timeThreshold">时间阈值(毫秒)：</label>
+                    <input type="number" id="timeThreshold" value="10000" min="1000">
+                </div>
+                <div class="form-group">
+                    <label for="messageThreshold">消息数阈值：</label>
+                    <input type="number" id="messageThreshold" value="10" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="dialogTurns">对话轮次：</label>
+                    <input type="number" id="dialogTurns" value="0" min="0">
+                </div>
+                <button id="runButton">运行测试</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">处理结果</div>
+            <div class="panel-content">
+                <div id="outputContainer" class="output-container">
+                    <div>请点击"运行测试"按钮查看结果</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">参考对比</div>
+            <div class="panel-content">
+                <div class="form-group">
+                    <label>原版插件与优化版插件对比：</label>
+                    <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5;">
+                                <th style="padding: 8px; text-align: left;">场景</th>
+                                <th style="padding: 8px; text-align: left;">原版行为</th>
+                                <th style="padding: 8px; text-align: left;">优化版行为</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 8px;">首次对话</td>
+                                <td style="padding: 8px;">清空消息历史和计数</td>
+                                <td style="padding: 8px;">保留消息历史和计数</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;">达到消息数阈值</td>
+                                <td style="padding: 8px;">清空消息历史和计数</td>
+                                <td style="padding: 8px;">清空消息历史和计数</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;">达到时间阈值</td>
+                                <td style="padding: 8px;">清空消息历史和计数</td>
+                                <td style="padding: 8px;">清空消息历史和计数</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMessageInput = document.getElementById('userMessage');
+            const messageHistoryInput = document.getElementById('messageHistory');
+            const lastMessageTimeInput = document.getElementById('lastMessageTime');
+            const messageCountInput = document.getElementById('messageCount');
+            const timeThresholdInput = document.getElementById('timeThreshold');
+            const messageThresholdInput = document.getElementById('messageThreshold');
+            const dialogTurnsInput = document.getElementById('dialogTurns');
+            const runButton = document.getElementById('runButton');
+            const outputContainer = document.getElementById('outputContainer');
+            
+            // 测试函数 - 优化版
+            function main({userChatInput, messageHistory, lastMessageTime, messageThreshold, messageCount, timeThreshold, dialogTurns}) {
+                // 确保输入参数的类型正确
+                let parsedMsgHistory = Array.isArray(messageHistory) ? [...messageHistory] : [];
+                const parsedLastTime = Number(lastMessageTime) || 0;
+                const parsedMsgCount = Number(messageCount) || 0;
+                const parsedTimeThreshold = Number(timeThreshold) || 10000;
+                const parsedMsgThreshold = Number(messageThreshold) || 10;
+                const parsedDialogTurns = Number(dialogTurns) || 0;
+                
+                // 计算当前时间
+                const currentTime = Date.now();
+                const timeSinceLastMessageMs = currentTime - parsedLastTime;
+                
+                // 检测是否是第一次对话
+                const isFirstConversation = parsedLastTime === 0 || parsedDialogTurns === 0;
+                
+                // 添加当前消息到历史记录
+                if (userChatInput) {
+                    parsedMsgHistory.push(userChatInput);
+                }
+                
+                // 更新消息计数
+                const updatedMsgCount = parsedMsgCount + 1;
+                
+                // 判断触发条件
+                const timeCondition = timeSinceLastMessageMs > parsedTimeThreshold && parsedMsgHistory.length > 0;
+                const countCondition = updatedMsgCount >= parsedMsgThreshold;
+                
+                // 确定是否应该回复，对首次对话特殊处理
+                const shouldReplyByTime = timeCondition;
+                const shouldReplyByCount = countCondition;
+                const shouldReplyByFirstConversation = isFirstConversation;
+                const shouldReply = shouldReplyByTime || shouldReplyByCount || shouldReplyByFirstConversation;
+                
+                // 是否应该阻止对话（通常不需要）
+                const shouldBlock = false;
+                
+                // 准备调试信息
+                const debug = {
+                    timeSinceLastMessageMs,
+                    timeThresholdMs: parsedTimeThreshold,
+                    parsedLastTimestamp: parsedLastTime,
+                    currentTime,
+                    isFirstConversation,
+                    shouldReplyByTime,
+                    shouldReplyByCount,
+                    shouldReplyByFirstConversation
+                };
+                
+                // 优化：针对首次对话不清空消息历史和计数，只有在达到阈值时才清空
+                // 优先级：计数条件 > 时间条件 > 首次对话条件
+                let finalMessageHistory = parsedMsgHistory;
+                let finalMessageCount = updatedMsgCount;
+                
+                // 只有在达到消息数阈值或时间阈值时才清空
+                if (shouldReplyByCount || shouldReplyByTime) {
+                    finalMessageHistory = [];
+                    finalMessageCount = 0;
+                }
+                
+                // 返回结果
+                return {
+                    userChatInput,
+                    shouldReply,
+                    shouldBlock,
+                    lastMessageTime: String(currentTime),
+                    messageHistory: finalMessageHistory,
+                    messageCount: finalMessageCount,
+                    dialogTurns: parsedDialogTurns + 1,
+                    debug
+                };
+            }
+            
+            // 运行按钮点击事件
+            runButton.addEventListener('click', function() {
+                try {
+                    // 获取输入值
+                    const userMessage = userMessageInput.value.trim();
+                    const messageHistory = JSON.parse(messageHistoryInput.value || '[]');
+                    const lastMessageTime = lastMessageTimeInput.value.trim();
+                    const messageCount = parseInt(messageCountInput.value);
+                    const timeThreshold = parseInt(timeThresholdInput.value);
+                    const messageThreshold = parseInt(messageThresholdInput.value);
+                    const dialogTurns = parseInt(dialogTurnsInput.value);
+                    
+                    // 显示输入变量
+                    const inputVars = {
+                        userMessage: userMessage,
+                        messageHistory: messageHistory,
+                        lastMessageTime: lastMessageTime,
+                        messageThreshold: messageThreshold,
+                        messageCount: messageCount,
+                        timeThreshold: timeThreshold,
+                        dialogTurns: dialogTurns
+                    };
+                    
+                    // 运行主函数
+                    const result = main({
+                        userChatInput: userMessage,
+                        messageHistory: messageHistory,
+                        lastMessageTime: lastMessageTime,
+                        messageThreshold: messageThreshold,
+                        messageCount: messageCount,
+                        timeThreshold: timeThreshold,
+                        dialogTurns: dialogTurns
+                    });
+                    
+                    // 高亮显示结果中关键的字段
+                    const highlightKeyFields = (obj) => {
+                        const json = JSON.stringify(obj, null, 2);
+                        return json
+                            .replace(/"shouldReply": true/g, '"shouldReply": <span style="color: #52c41a; font-weight: bold;">true</span>')
+                            .replace(/"messageHistory": \[/g, '"messageHistory": <span style="color: #1890ff; font-weight: bold;">[</span>')
+                            .replace(/"messageCount": (\d+)/g, (match, p1) => 
+                                `"messageCount": <span style="color: #1890ff; font-weight: bold;">${p1}</span>`)
+                            .replace(/"isFirstConversation": true/g, '"isFirstConversation": <span style="color: #722ed1; font-weight: bold;">true</span>');
+                    };
+                    
+                    // 显示结果
+                    outputContainer.innerHTML = `
+                        <h3>输入变量：</h3>
+                        <pre>${JSON.stringify(inputVars, null, 2)}</pre>
+                        
+                        <h3>输出变量：</h3>
+                        <pre>${highlightKeyFields(result)}</pre>
+                    `;
+                    
+                    // 更新输入字段，便于连续测试
+                    lastMessageTimeInput.value = result.lastMessageTime;
+                    messageHistoryInput.value = JSON.stringify(result.messageHistory);
+                    messageCountInput.value = result.messageCount;
+                    dialogTurnsInput.value = result.dialogTurns;
+                    userMessageInput.value = "";
+                    
+                } catch (error) {
+                    outputContainer.innerHTML = `<div style="color: red;">错误: ${error.message}</div>`;
+                    console.error('处理错误:', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

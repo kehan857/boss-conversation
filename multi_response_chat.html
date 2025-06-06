@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastGPT 多段对话聊天接口</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chat-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eaeaea;
+            background-color: #1890ff;
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 70%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .user .message-content {
+            background-color: #1890ff;
+            color: white;
+            border-radius: 18px 18px 0 18px;
+        }
+        .bot .message-content {
+            background-color: #f1f1f1;
+            color: #333;
+            border-radius: 18px 18px 18px 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator {
+            display: flex;
+            padding: 10px 15px;
+            background-color: #f1f1f1;
+            border-radius: 18px 18px 18px 0;
+            margin-bottom: 15px;
+            width: fit-content;
+            animation: pulse 1.5s infinite;
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #888;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            opacity: 0.4;
+        }
+        .typing-indicator span:nth-child(1) {
+            animation: blink 1s infinite 0.3s;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation: blink 1s infinite 0.5s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation: blink 1s infinite 0.7s;
+        }
+        @keyframes blink {
+            50% { opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eaeaea;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .chat-input input:focus {
+            border-color: #1890ff;
+        }
+        .chat-input button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0 20px;
+            margin-left: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .chat-input button:hover {
+            background-color: #0c7cd5;
+        }
+        .chat-input button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FastGPT 多段对话演示</h1>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>智能聊天助手</h2>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="请输入消息..." autofocus>
+                <button id="send-button">发送</button>
+            </div>
+        </div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        const apiKey = 'fastgpt-dIZ13SeCXJOp0eCvGvwVaqR71Kq6qRHtDUkH1CqMpxIQCWvwV0qvT3p';
+        const apiUrl = 'https://api.fastgpt.in/api/v1/chat/completions';
+        
+        let chatId = Date.now().toString(); // 唯一会话ID
+        const messagesElement = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const statusElement = document.getElementById('status');
+        
+        let isTyping = false;
+        let typingIndicator = null;
+
+        // 添加用户消息到聊天界面
+        function addUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+            messagesElement.appendChild(messageDiv);
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+        }
+
+        // 添加机器人消息到聊天界面
+        function addBotMessage(message) {
+            // 如果有正在打字的指示器，先移除它
+            removeTypingIndicator();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+            messagesElement.appendChild(messageDiv);
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+        }
+
+        // 显示打字指示器
+        function showTypingIndicator() {
+            if (!typingIndicator) {
+                typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator';
+                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                messagesElement.appendChild(typingIndicator);
+                messagesElement.scrollTop = messagesElement.scrollHeight;
+            }
+        }
+
+        // 移除打字指示器
+        function removeTypingIndicator() {
+            if (typingIndicator && typingIndicator.parentNode) {
+                typingIndicator.parentNode.removeChild(typingIndicator);
+                typingIndicator = null;
+            }
+        }
+
+        // 发送消息到FastGPT API
+        async function sendMessage(message) {
+            if (!message.trim()) return;
+            
+            isTyping = true;
+            userInput.value = '';
+            userInput.disabled = true;
+            sendButton.disabled = true;
+            
+            // 显示用户消息
+            addUserMessage(message);
+            
+            // 显示打字指示器
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',  // 更换为您的增强回复插件ID
+                        chatId: chatId,
+                        text: message,  // 使用修改后的变量名
+                        messages: [
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                
+                // 处理回复
+                handleResponse(data);
+            } catch (error) {
+                console.error('Error:', error);
+                statusElement.textContent = `发生错误: ${error.message}`;
+                removeTypingIndicator();
+            } finally {
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                userInput.focus();
+                isTyping = false;
+            }
+        }
+
+        // 处理API响应
+        function handleResponse(data) {
+            // 移除打字指示器
+            removeTypingIndicator();
+            
+            if (data.choices && data.choices.length > 0) {
+                const content = data.choices[0].message.content;
+                
+                if (data.unifiedResponse && data.unifiedResponse.responseType === "queue") {
+                    // 如果是队列类型的回复，分段显示
+                    const messages = data.unifiedResponse.data.messages;
+                    displayQueueMessages(messages);
+                } else {
+                    // 单条消息直接显示
+                    addBotMessage(content);
+                }
+            } else if (data.error) {
+                statusElement.textContent = `API错误: ${data.error.message}`;
+            } else {
+                statusElement.textContent = '接收到无效的响应';
+            }
+        }
+
+        // 分段显示队列消息
+        function displayQueueMessages(messages) {
+            if (!Array.isArray(messages) || messages.length === 0) return;
+            
+            let index = 0;
+            
+            // 显示第一条消息
+            addBotMessage(messages[index].content);
+            index++;
+            
+            // 使用setTimeout分段显示后续消息
+            function displayNext() {
+                if (index < messages.length) {
+                    // 显示打字指示器
+                    showTypingIndicator();
+                    
+                    // 延迟后显示下一条消息
+                    setTimeout(() => {
+                        addBotMessage(messages[index].content);
+                        index++;
+                        displayNext();
+                    }, messages[index].delay || 2000); // 默认2秒延迟
+                }
+            }
+            
+            displayNext();
+        }
+
+        // 发送按钮点击事件
+        sendButton.addEventListener('click', () => {
+            if (!isTyping) {
+                sendMessage(userInput.value);
+            }
+        });
+
+        // 输入框回车事件
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !isTyping) {
+                sendMessage(userInput.value);
+            }
+        });
+
+        // 初始欢迎消息
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addBotMessage('您好！我是FastGPT智能助手，请问有什么可以帮助您的吗？');
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

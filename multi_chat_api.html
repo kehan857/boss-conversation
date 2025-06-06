@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastGPT 物理多次回复聊天演示</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fb;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chat-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eaeaea;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #555;
+        }
+        .message.user .avatar {
+            margin-right: 0;
+            margin-left: 10px;
+            background-color: #1976D2;
+            color: white;
+        }
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 70%;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .user .message-content {
+            background-color: #2196F3;
+            color: white;
+            border-radius: 18px 18px 0 18px;
+        }
+        .bot .message-content {
+            background-color: #f1f1f1;
+            color: #333;
+            border-radius: 18px 18px 18px 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background-color: #f1f1f1;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            width: fit-content;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #888;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            opacity: 0.4;
+        }
+        .typing-indicator span:nth-child(1) {
+            animation: blink 1s infinite 0.3s;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation: blink 1s infinite 0.5s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation: blink 1s infinite 0.7s;
+        }
+        @keyframes blink {
+            50% { opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eaeaea;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .chat-input input:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+        }
+        .chat-input button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0 25px;
+            margin-left: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 44px;
+        }
+        .chat-input button:hover {
+            background-color: #1976D2;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .chat-input button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .time-stamp {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+        .bot .time-stamp {
+            text-align: left;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8f8f8;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FastGPT 物理多次回复聊天演示</h1>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>销售智能体 - 真人对话模拟</h2>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="请输入您的问题..." autofocus>
+                <button id="send-button">发送</button>
+            </div>
+        </div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        // 配置参数
+        const API_BASE_URL = 'http://localhost:5001/api';
+        
+        // 全局变量
+        let chatId = localStorage.getItem('chatId') || Date.now().toString();
+        localStorage.setItem('chatId', chatId);
+        
+        const messagesElement = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const statusElement = document.getElementById('status');
+        
+        let isTyping = false;
+        let typingIndicator = null;
+        let currentPollInterval = null;
+
+        // 添加当前时间戳
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        // 添加用户消息到聊天界面
+        function addUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            // 处理可能的markdown代码块
+            const formattedMessage = formatMessage(message);
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${formattedMessage}
+                    <div class="time-stamp">${getCurrentTime()}</div>
+                </div>
+                <div class="avatar">U</div>
+            `;
+            messagesElement.appendChild(messageDiv);
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+        }
+
+        // 添加机器人消息到聊天界面
+        function addBotMessage(message) {
+            // 如果有正在打字的指示器，先移除它
+            removeTypingIndicator();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            // 处理可能的markdown代码块
+            const formattedMessage = formatMessage(message);
+            
+            messageDiv.innerHTML = `
+                <div class="avatar">AI</div>
+                <div class="message-content">
+                    ${formattedMessage}
+                    <div class="time-stamp">${getCurrentTime()}</div>
+                </div>
+            `;
+            messagesElement.appendChild(messageDiv);
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+        }
+
+        // 格式化消息，处理代码块等
+        function formatMessage(message) {
+            // 简单处理代码块，这里只是示例，实际可能需要更复杂的markdown解析
+            let formatted = message
+                .replace(/```([a-z]*)([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                .replace(/\n/g, '<br>');
+            return formatted;
+        }
+
+        // 显示打字指示器
+        function showTypingIndicator() {
+            if (!typingIndicator) {
+                typingIndicator = document.createElement('div');
+                typingIndicator.className = 'message bot';
+                typingIndicator.innerHTML = `
+                    <div class="avatar">AI</div>
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                `;
+                messagesElement.appendChild(typingIndicator);
+                messagesElement.scrollTop = messagesElement.scrollHeight;
+            }
+        }
+
+        // 移除打字指示器
+        function removeTypingIndicator() {
+            if (typingIndicator && typingIndicator.parentNode) {
+                typingIndicator.parentNode.removeChild(typingIndicator);
+                typingIndicator = null;
+            }
+        }
+
+        // 发送问题到服务器
+        async function sendQuestion(question) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/questions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: question,
+                        chatId: chatId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error sending question:', error);
+                statusElement.textContent = `发送问题出错: ${error.message}`;
+                throw error;
+            }
+        }
+
+        // 获取响应段落
+        async function getResponseSegment(requestId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/responses/${requestId}`, {
+                    method: 'GET'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error getting response segment:', error);
+                statusElement.textContent = `获取回复出错: ${error.message}`;
+                throw error;
+            }
+        }
+
+        // 主要发送消息函数
+        async function sendMessage(message) {
+            if (!message.trim()) return;
+            
+            isTyping = true;
+            userInput.value = '';
+            userInput.disabled = true;
+            sendButton.disabled = true;
+            
+            // 显示用户消息
+            addUserMessage(message);
+            
+            try {
+                // 发送问题
+                showTypingIndicator();
+                const questionResponse = await sendQuestion(message);
+                
+                if (questionResponse.request_id) {
+                    // 开始轮询获取响应片段
+                    pollResponseSegments(questionResponse.request_id);
+                } else {
+                    throw new Error('未获取到有效的请求ID');
+                }
+            } catch (error) {
+                console.error('Error in sendMessage:', error);
+                removeTypingIndicator();
+                statusElement.textContent = `错误: ${error.message}`;
+            } finally {
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        // 轮询获取响应片段
+        async function pollResponseSegments(requestId) {
+            // 清除可能存在的之前的轮询
+            if (currentPollInterval) {
+                clearInterval(currentPollInterval);
+            }
+            
+            // 首次立即请求
+            await fetchNextSegment(requestId);
+            
+            // 设置轮询
+            let pollCount = 0;
+            currentPollInterval = setInterval(async () => {
+                await fetchNextSegment(requestId);
+                
+                // 如果轮询次数过多，自动停止防止无限循环
+                pollCount++;
+                if (pollCount > 30) { // 最多轮询30次，防止无限循环
+                    clearInterval(currentPollInterval);
+                    statusElement.textContent = '轮询次数过多，已自动停止';
+                    isTyping = false;
+                }
+            }, 1000); // 每秒轮询一次
+        }
+
+        // 获取下一个响应片段
+        async function fetchNextSegment(requestId) {
+            try {
+                const segmentResponse = await getResponseSegment(requestId);
+                
+                // 如果请求完成但没有更多片段
+                if (segmentResponse.status === 'completed' && !segmentResponse.segment) {
+                    clearInterval(currentPollInterval);
+                    removeTypingIndicator();
+                    isTyping = false;
+                    return;
+                }
+                
+                // 如果有新的片段
+                if (segmentResponse.segment) {
+                    // 显示片段内容
+                    addBotMessage(segmentResponse.segment);
+                    
+                    // 如果是最后一个片段
+                    if (segmentResponse.is_last) {
+                        clearInterval(currentPollInterval);
+                        isTyping = false;
+                    } else {
+                        // 不是最后一个片段，显示打字指示器等待下一个
+                        showTypingIndicator();
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching segment:', error);
+                clearInterval(currentPollInterval);
+                removeTypingIndicator();
+                statusElement.textContent = `获取回复片段出错: ${error.message}`;
+                isTyping = false;
+            }
+        }
+
+        // 发送按钮点击事件
+        sendButton.addEventListener('click', () => {
+            if (!isTyping) {
+                sendMessage(userInput.value);
+            }
+        });
+
+        // 输入框回车事件
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !isTyping) {
+                sendMessage(userInput.value);
+            }
+        });
+
+        // 加载历史消息
+        async function loadChatHistory() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/history/${chatId}`);
+                
+                if (!response.ok) {
+                    // 如果获取不到历史记录（比如第一次聊天），则显示欢迎消息
+                    addBotMessage('您好！我是FastGPT销售智能体，可以为您提供详细的项目介绍和解决方案。请问有什么可以帮助您的？');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.history && data.history.length > 0) {
+                    // 显示历史消息
+                    data.history.forEach(msg => {
+                        if (msg.role === 'user') {
+                            addUserMessage(msg.content);
+                        } else if (msg.role === 'assistant') {
+                            addBotMessage(msg.content);
+                        }
+                    });
+                } else {
+                    // 没有历史记录，显示欢迎消息
+                    addBotMessage('您好！我是FastGPT销售智能体，可以为您提供详细的项目介绍和解决方案。请问有什么可以帮助您的？');
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                addBotMessage('您好！我是FastGPT销售智能体，可以为您提供详细的项目介绍和解决方案。请问有什么可以帮助您的？');
+            }
+        }
+
+        // 页面加载时加载历史消息
+        window.addEventListener('load', loadChatHistory);
+    </script>
+</body>
+</html> 

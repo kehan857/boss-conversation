@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastGPT增强回复插件测试</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #1890ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .panel {
+            margin-bottom: 20px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .panel-title {
+            background-color: #f7f7f7;
+            padding: 12px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .panel-content {
+            padding: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        input[type="number"] {
+            width: 100px;
+        }
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        button:disabled {
+            background-color: #d9d9d9;
+            cursor: not-allowed;
+        }
+        .output-container {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            padding: 15px;
+            min-height: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .segment {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-left: 3px solid #1890ff;
+            border-radius: 0 4px 4px 0;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .typing {
+            border-left: 3px solid #52c41a;
+        }
+        .thinking {
+            border-left: 3px solid #faad14;
+        }
+        .response-info {
+            color: #888;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        .loading::after {
+            content: "...";
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .error {
+            color: #f5222d;
+            padding: 10px;
+            background-color: #fff1f0;
+            border: 1px solid #ffccc7;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .usage-tips {
+            background-color: #e6f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FastGPT增强回复插件测试</h1>
+        
+        <div class="usage-tips">
+            <p><strong>使用说明：</strong></p>
+            <ol>
+                <li>输入FastGPT API密钥</li>
+                <li>输入要分段处理的文本</li>
+                <li>设置分段长度和延迟时间</li>
+                <li>选择请求模式（推荐使用本地服务器模式或CORS代理模式）</li>
+                <li>点击"发送请求"，系统将分段显示回复</li>
+            </ol>
+            
+            <div style="background-color: #ffe6e6; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                <p><strong>CORS错误解决方案：</strong></p>
+                <p>当前遇到的问题是CORS限制，有以下几种解决方法：</p>
+                <ol>
+                    <li><strong>方法1：选择"CORS代理"模式</strong>
+                        <ul>
+                            <li>确保只使用<strong>一个</strong>代理URL</li>
+                            <li>建议使用corsproxy.io代理</li>
+                        </ul>
+                    </li>
+                    <li><strong>方法2：尝试直接FastGPT API</strong>
+                        <ul>
+                            <li>将API地址改为: <code>https://fastgpt.run/api</code></li>
+                            <li>选择"直接请求"模式</li>
+                        </ul>
+                    </li>
+                    <li><strong>方法3：启动本地服务器</strong>（需要Node.js环境）</li>
+                </ol>
+            </div>
+            
+            <p><strong>说明：</strong>分段显示模式会自动计算合理的延迟时间，使AI回复更自然。</p>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">配置信息</div>
+            <div class="panel-content">
+                <div class="form-group">
+                    <label for="apiKey">API密钥：</label>
+                    <input type="text" id="apiKey" value="fastgpt-vtV6ZWlXOXTgHEKzLmmc22lbVXn9yLUtJgWoti6V5uwuV7mPKDKTinemN" placeholder="输入FastGPT API密钥">
+                </div>
+                <div class="form-group">
+                    <label for="apiUrl">API地址：</label>
+                    <input type="text" id="apiUrl" value="http://localhost:3001/api" placeholder="输入API地址">
+                    <div style="margin-top: 5px;">
+                        <select id="apiDomain" onchange="updateApiUrl()">
+                            <option value="localhost">本地服务器 (localhost)</option>
+                            <option value="api.fastgpt.in">api.fastgpt.in</option>
+                            <option value="fastgpt.run">fastgpt.run</option>
+                            <option value="custom">自定义...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>请求模式：</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="radio" id="modeLocalServer" name="requestMode" value="localServer" checked>
+                        <label for="modeLocalServer" style="font-weight: normal;">本地服务器（推荐）</label>
+                        
+                        <input type="radio" id="modeCorsProxy" name="requestMode" value="corsProxy">
+                        <label for="modeCorsProxy" style="font-weight: normal;">CORS代理</label>
+                        
+                        <input type="radio" id="modeDirect" name="requestMode" value="direct">
+                        <label for="modeDirect" style="font-weight: normal;">直接请求</label>
+                    </div>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">
+                        <strong>提示：</strong>本地服务器模式需要先启动Node.js代理服务 (node proxy_server.js)
+                    </div>
+                </div>
+                
+                <div class="form-group" id="corsProxyContainer" style="display: none;">
+                    <label>CORS代理选择：</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="radio" id="corsProxy1" name="corsOption" value="proxy1" checked>
+                        <label for="corsProxy1" style="font-weight: normal;">corsproxy.io</label>
+                        
+                        <input type="radio" id="corsProxy2" name="corsOption" value="proxy2">
+                        <label for="corsProxy2" style="font-weight: normal;">cors.sh</label>
+                        
+                        <input type="radio" id="corsCustom" name="corsOption" value="custom">
+                        <label for="corsCustom" style="font-weight: normal;">自定义代理</label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="customProxyContainer" style="display: none;">
+                    <label for="customProxy">自定义代理URL：</label>
+                    <input type="text" id="customProxy" value="https://corsproxy.io/?" placeholder="输入单个代理URL">
+                    <div style="font-size: 12px; color: #999; margin-top: 4px;">
+                        <strong>请只选择一个代理URL</strong>（复制下面其中一个）:<br>
+                        https://corsproxy.io/?<br>
+                        https://cors.sh/<br>
+                        https://cors-anywhere.herokuapp.com/<br>
+                        https://api.allorigins.win/raw?url=
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">测试参数</div>
+            <div class="panel-content">
+                <div class="form-group">
+                    <label for="segmentLength">分段长度：</label>
+                    <input type="number" id="segmentLength" value="150" min="50" max="500">
+                </div>
+                <div class="form-group">
+                    <label for="accumulatedDelay">每段延迟(毫秒)：</label>
+                    <input type="number" id="accumulatedDelay" value="2000" min="500" max="5000">
+                </div>
+                <div class="form-group">
+                    <label for="originalText">原始文本：</label>
+                    <textarea id="originalText" placeholder="输入要分段处理的文本...">FastGPT是一款强大的AI应用开发平台，旨在帮助用户快速搭建各类AI应用。它提供了一系列功能，包括知识库管理、流程编排、API调用等，使得非技术人员也能轻松开发自己的AI应用。
+
+FastGPT支持多种大语言模型，如OpenAI的GPT系列、国产的通义千问、百度文心一言等。平台采用可视化流程编排的方式，让用户通过拖拽节点即可完成复杂的应用逻辑设计。
+
+除了基础的对话功能，FastGPT还支持多种数据源接入，包括文档、网页、数据库等，并能进行自动抓取和更新。系统内置了多种插件，如网络搜索、文件解析、代码执行等，扩展了应用的功能边界。
+
+FastGPT的一大特色是其开源特性，用户可以自部署平台，确保数据安全与隐私。同时，它也提供了完善的API接口，支持与第三方系统的集成对接，如飞书、钉钉、微信等。
+
+总之，FastGPT是一个功能全面、操作简便、扩展性强的AI应用开发平台，适合各类企业和个人用户打造自己的AI助手和自动化工具。</textarea>
+                </div>
+                <button id="sendButton">发送请求</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">输出结果</div>
+            <div class="panel-content">
+                <div id="outputContainer" class="output-container">
+                    <div class="response-info">请点击"发送请求"获取分段回复</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">调试信息 <button id="toggleDebug" style="float: right; padding: 2px 8px; font-size: 12px;">显示/隐藏</button></div>
+            <div class="panel-content" id="debugContainer" style="display: none;">
+                <div class="form-group">
+                    <label>请求内容：</label>
+                    <pre id="requestDebug" style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow: auto; max-height: 150px;"></pre>
+                </div>
+                <div class="form-group">
+                    <label>响应内容：<button id="copyResponse" style="padding: 2px 8px; font-size: 12px; margin-left: 10px;">复制</button></label>
+                    <pre id="responseDebug" style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow: auto; max-height: 150px;"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #888; font-size: 12px;">
+            FastGPT增强回复插件测试页面 | 版本 1.0
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKeyInput = document.getElementById('apiKey');
+            const apiUrlInput = document.getElementById('apiUrl');
+            const segmentLengthInput = document.getElementById('segmentLength');
+            const accumulatedDelayInput = document.getElementById('accumulatedDelay');
+            const originalTextInput = document.getElementById('originalText');
+            const sendButton = document.getElementById('sendButton');
+            const outputContainer = document.getElementById('outputContainer');
+            const requestDebug = document.getElementById('requestDebug');
+            const responseDebug = document.getElementById('responseDebug');
+            const toggleDebugBtn = document.getElementById('toggleDebug');
+            const debugContainer = document.getElementById('debugContainer');
+            const copyResponseBtn = document.getElementById('copyResponse');
+            const corsOptions = document.querySelectorAll('input[name="corsOption"]');
+            const customProxyContainer = document.getElementById('customProxyContainer');
+            const customProxyInput = document.getElementById('customProxy');
+            const requestModes = document.querySelectorAll('input[name="requestMode"]');
+            const corsProxyContainer = document.getElementById('corsProxyContainer');
+            
+            // 处理请求模式切换
+            requestModes.forEach(mode => {
+                mode.addEventListener('change', function() {
+                    if (this.value === 'corsProxy') {
+                        corsProxyContainer.style.display = 'block';
+                        customProxyContainer.style.display = 
+                            document.querySelector('input[name="corsOption"]:checked').value === 'custom' 
+                            ? 'block' : 'none';
+                    } else {
+                        corsProxyContainer.style.display = 'none';
+                        customProxyContainer.style.display = 'none';
+                    }
+                    
+                    // 更新API地址提示
+                    if (this.value === 'localServer') {
+                        apiUrlInput.value = "http://localhost:3001/api";
+                    } else if (apiUrlInput.value === "http://localhost:3001/api") {
+                        apiUrlInput.value = "https://api.fastgpt.in/api";
+                    }
+                });
+            });
+            
+            // 处理CORS选项切换
+            corsOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    if (this.value === 'custom') {
+                        customProxyContainer.style.display = 'block';
+                    } else {
+                        customProxyContainer.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 获取当前选择的请求模式
+            function getSelectedRequestMode() {
+                const selected = document.querySelector('input[name="requestMode"]:checked');
+                return selected ? selected.value : 'localServer';
+            }
+            
+            // 获取当前选择的CORS选项
+            function getSelectedCorsOption() {
+                const selected = document.querySelector('input[name="corsOption"]:checked');
+                return selected ? selected.value : 'proxy1';
+            }
+            
+            // 根据请求模式和CORS选项处理URL
+            function processUrl(url) {
+                const requestMode = getSelectedRequestMode();
+                
+                // 如果使用本地服务器模式，直接返回URL (已经设置为localhost)
+                if (requestMode === 'localServer') {
+                    return url;
+                }
+                
+                // 如果是直接请求模式
+                if (requestMode === 'direct') {
+                    return url;
+                }
+                
+                // 如果是CORS代理模式
+                if (requestMode === 'corsProxy') {
+                    const corsOption = getSelectedCorsOption();
+                    
+                    if (corsOption === 'custom') {
+                        // 获取自定义代理URL，确保只有一个
+                        let customProxy = customProxyInput.value.trim();
+                        
+                        // 如果用户不小心输入了多个URL，只取第一个
+                        if (customProxy.includes('http') && customProxy.indexOf('http', 1) > 0) {
+                            customProxy = customProxy.substring(0, customProxy.indexOf('http', 1)).trim();
+                        }
+                        
+                        return customProxy + url;
+                    } else if (corsOption === 'proxy1') {
+                        // 使用corsproxy.io
+                        return 'https://corsproxy.io/?' + url;
+                    } else if (corsOption === 'proxy2') {
+                        // 使用cors.sh
+                        return 'https://cors.sh/' + url;
+                    }
+                }
+                
+                // 默认使用本地服务器
+                return url;
+            }
+            
+            // 复制响应内容
+            copyResponseBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(responseDebug.textContent)
+                    .then(() => {
+                        const originalText = copyResponseBtn.textContent;
+                        copyResponseBtn.textContent = '已复制!';
+                        setTimeout(() => {
+                            copyResponseBtn.textContent = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('复制失败:', err);
+                    });
+            });
+            
+            // 调试面板显示/隐藏切换
+            toggleDebugBtn.addEventListener('click', function() {
+                debugContainer.style.display = debugContainer.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // 设置初始API地址为本地代理服务器
+            apiUrlInput.value = 'http://localhost:3001/api';
+            
+            let isProcessing = false;
+            
+            sendButton.addEventListener('click', async function() {
+                if (isProcessing) return;
+                
+                const apiKey = apiKeyInput.value.trim();
+                const apiUrl = apiUrlInput.value.trim();
+                const segmentLength = parseInt(segmentLengthInput.value);
+                const accumulatedDelay = parseInt(accumulatedDelayInput.value);
+                const origiResponse = originalTextInput.value.trim();
+                
+                // 输入验证
+                if (!apiKey) {
+                    showError('请输入API密钥');
+                    return;
+                }
+                
+                if (!origiResponse) {
+                    showError('请输入要处理的文本');
+                    return;
+                }
+                
+                isProcessing = true;
+                sendButton.disabled = true;
+                sendButton.textContent = '处理中...';
+                
+                // 显示加载状态
+                outputContainer.innerHTML = '<div class="loading">正在处理请求</div>';
+                
+                try {
+                    // 检查是否本地运行且选择了直接请求
+                    if (window.location.protocol === 'file:' && getSelectedCorsOption() === 'direct') {
+                        showError(`CORS警告: 您正在本地文件系统中运行此页面，直接请求可能会因为CORS限制失败。<br><br>
+                        建议:<br>
+                        1. 选择"使用CORS代理"或"自定义代理"选项<br>
+                        2. 或者将此页面部署到Web服务器上`);
+                        
+                        // 仍然继续执行，以防万一可以成功
+                        outputContainer.innerHTML += '<div class="loading">尝试发送请求，但可能失败...</div>';
+                    }
+                    
+                    // 调用FastGPT增强回复插件
+                    let response;
+                    try {
+                        // 首先尝试直接调用插件名称
+                        response = await callEnhancedResponsePluginByName(
+                            apiUrl, 
+                            apiKey, 
+                            origiResponse, 
+                            segmentLength, 
+                            accumulatedDelay
+                        );
+                    } catch (error) {
+                        console.warn('通过插件名称调用失败，尝试使用run接口:', error);
+                        
+                        outputContainer.innerHTML = '<div class="response-info">第一种方法失败，尝试备用方法...</div>';
+                        
+                        // 如果第一种方式失败，尝试使用通用run接口
+                        response = await callEnhancedResponsePluginByRun(
+                            apiUrl, 
+                            apiKey, 
+                            origiResponse, 
+                            segmentLength, 
+                            accumulatedDelay
+                        );
+                    }
+                    
+                    // 显示分段回复
+                    await displaySegmentedResponse(response);
+                } catch (error) {
+                    console.error('请求失败:', error);
+                    
+                    // 提供更详细的错误信息和建议
+                    let errorMessage = '请求失败: ' + (error.message || '未知错误');
+                    
+                    // 针对常见错误提供更有帮助的提示
+                    if (error.message && error.message.includes('Failed to fetch')) {
+                        errorMessage += '<br><br><strong>可能的原因:</strong><br>' +
+                        '1. CORS限制: 请尝试使用CORS代理<br>' +
+                        '2. 网络问题: 请检查您的网络连接<br>' +
+                        '3. API地址或服务器错误: 请确认API地址正确';
+                    } else if (error.message && error.message.includes('NetworkError')) {
+                        errorMessage += '<br><br>这可能是由于CORS策略限制造成的。请尝试:<br>' +
+                        '1. 选择"使用CORS代理"选项<br>' +
+                        '2. 将此页面部署到Web服务器上';
+                    } else {
+                        errorMessage += '<br><br>请检查:<br>' +
+                        '1. API密钥是否正确<br>' +
+                        '2. 增强回复插件是否已安装<br>' +
+                        '3. 网络连接是否正常<br>' +
+                        '4. 尝试使用CORS代理';
+                    }
+                    
+                    showError(errorMessage);
+                } finally {
+                    isProcessing = false;
+                    sendButton.disabled = false;
+                    sendButton.textContent = '发送请求';
+                }
+            });
+            
+            // 通过插件名称调用FastGPT增强回复插件API
+            async function callEnhancedResponsePluginByName(apiUrl, apiKey, origiResponse, segmentLength, accumulatedDelay) {
+                try {
+                    // 构建请求URL - 直接使用插件名称路径
+                    let pluginEndpoint = `${apiUrl}/v1/plugin/增强回复插件/run`;
+                    
+                    // 使用CORS代理处理URL
+                    const processedUrl = processUrl(pluginEndpoint);
+                    
+                    // 构建请求体
+                    const requestBody = {
+                        inputs: {
+                            origiResponse: origiResponse,
+                            SegmentLength: segmentLength,
+                            accumulatedDelay: accumulatedDelay
+                        }
+                    };
+                    
+                    // 更新请求调试面板
+                    requestDebug.textContent = JSON.stringify({
+                        original_url: pluginEndpoint,
+                        processed_url: processedUrl,
+                        cors_option: getSelectedCorsOption(),
+                        method: 'POST',
+                        body: requestBody
+                    }, null, 2);
+                    
+                    // 记录请求信息到控制台，方便调试
+                    console.log('原始请求URL:', pluginEndpoint);
+                    console.log('处理后请求URL:', processedUrl);
+                    console.log('请求体:', JSON.stringify(requestBody, null, 2));
+                    
+                    // 发送请求
+                    const response = await fetch(processedUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors',
+                        credentials: 'omit',
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    // 检查响应状态
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('API错误详情:', errorText);
+                        
+                        // 更新响应调试面板
+                        responseDebug.textContent = `错误 (${response.status}): ${errorText}`;
+                        
+                        throw new Error(`API请求失败 (${response.status}): ${errorText}`);
+                    }
+                    
+                    // 解析响应数据
+                    const responseData = await response.json();
+                    console.log('API响应:', responseData);
+                    
+                    // 更新响应调试面板
+                    responseDebug.textContent = JSON.stringify(responseData, null, 2);
+                    
+                    return responseData;
+                } catch (error) {
+                    // 确保错误也显示在调试面板中
+                    responseDebug.textContent = `请求异常: ${error.message}`;
+                    throw error;
+                }
+            }
+            
+            // 通过run接口调用FastGPT增强回复插件API
+            async function callEnhancedResponsePluginByRun(apiUrl, apiKey, origiResponse, segmentLength, accumulatedDelay) {
+                try {
+                    // 构建请求URL - 使用通用run接口
+                    const pluginEndpoint = `${apiUrl}/v1/plugin/run`;
+                    
+                    // 使用CORS代理处理URL
+                    const processedUrl = processUrl(pluginEndpoint);
+                    
+                    // 构建请求体
+                    const requestBody = {
+                        pluginId: "增强回复插件",
+                        inputs: {
+                            origiResponse: origiResponse,
+                            SegmentLength: segmentLength,
+                            accumulatedDelay: accumulatedDelay
+                        }
+                    };
+                    
+                    // 更新请求调试面板
+                    requestDebug.textContent = JSON.stringify({
+                        original_url: pluginEndpoint,
+                        processed_url: processedUrl,
+                        cors_option: getSelectedCorsOption(),
+                        method: 'POST',
+                        body: requestBody
+                    }, null, 2);
+                    
+                    // 记录请求信息到控制台，方便调试
+                    console.log('原始请求URL:', pluginEndpoint);
+                    console.log('处理后请求URL:', processedUrl);
+                    console.log('请求体:', JSON.stringify(requestBody, null, 2));
+                    
+                    // 发送请求
+                    const response = await fetch(processedUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors',
+                        credentials: 'omit',
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    // 检查响应状态
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('API错误详情:', errorText);
+                        
+                        // 更新响应调试面板
+                        responseDebug.textContent = `错误 (${response.status}): ${errorText}`;
+                        
+                        throw new Error(`API请求失败 (${response.status}): ${errorText}`);
+                    }
+                    
+                    // 解析响应数据
+                    const responseData = await response.json();
+                    console.log('API响应:', responseData);
+                    
+                    // 更新响应调试面板
+                    responseDebug.textContent = JSON.stringify(responseData, null, 2);
+                    
+                    return responseData;
+                } catch (error) {
+                    // 确保错误也显示在调试面板中
+                    responseDebug.textContent = `请求异常: ${error.message}`;
+                    throw error;
+                }
+            }
+            
+            // 显示分段回复
+            async function displaySegmentedResponse(response) {
+                // 清空输出容器
+                outputContainer.innerHTML = '';
+                
+                try {
+                    // 检查响应格式
+                    if (!response) {
+                        showError('无效的响应: 响应为空');
+                        return;
+                    }
+                    
+                    if (!response.outputs) {
+                        showError('无效的响应格式: 缺少outputs字段');
+                        console.error('API响应格式不正确:', response);
+                        return;
+                    }
+                    
+                    // 获取输出文本数组和延迟时间
+                    const segments = response.outputs.outputText || [];
+                    const delay = response.outputs.accumulatedDelay || 2000;
+                    
+                    if (!segments || !Array.isArray(segments) || segments.length === 0) {
+                        showError('无有效段落: API返回了空的段落数组');
+                        console.error('段落数组无效:', segments);
+                        return;
+                    }
+                    
+                    // 添加响应信息
+                    const responseInfo = document.createElement('div');
+                    responseInfo.className = 'response-info';
+                    responseInfo.textContent = `共 ${segments.length} 个段落，每段延迟 ${delay}ms`;
+                    outputContainer.appendChild(responseInfo);
+                    
+                    // 逐段显示文本
+                    for (let i = 0; i < segments.length; i++) {
+                        // 第一段不需要延迟，后续段落才添加延迟
+                        if (i > 0) {
+                            // 在界面上显示进度
+                            const progressInfo = document.createElement('div');
+                            progressInfo.className = 'response-info';
+                            progressInfo.textContent = `显示第 ${i+1}/${segments.length} 段...`;
+                            outputContainer.appendChild(progressInfo);
+                            
+                            // 添加延迟，只对第二段及以后的段落
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            
+                            // 移除进度信息
+                            outputContainer.removeChild(progressInfo);
+                        }
+                        
+                        // 创建段落元素并直接显示完整内容
+                        const segmentElement = document.createElement('div');
+                        segmentElement.className = 'segment';
+                        segmentElement.textContent = segments[i];
+                        outputContainer.appendChild(segmentElement);
+                        
+                        // 滚动到底部
+                        outputContainer.scrollTop = outputContainer.scrollHeight;
+                    }
+                } catch (error) {
+                    console.error('显示分段回复失败:', error);
+                    showError('显示分段回复失败: ' + (error.message || '未知错误'));
+                }
+            }
+            
+            // 显示错误信息
+            function showError(message) {
+                outputContainer.innerHTML = `<div class="error">${message}</div>`;
+            }
+
+            function updateApiUrl() {
+                const domain = document.getElementById('apiDomain').value;
+                const apiUrlInput = document.getElementById('apiUrl');
+                
+                if (domain === 'localhost') {
+                    apiUrlInput.value = "http://localhost:3001/api";
+                } else if (domain === 'api.fastgpt.in') {
+                    apiUrlInput.value = "https://api.fastgpt.in/api";
+                } else if (domain === 'fastgpt.run') {
+                    apiUrlInput.value = "https://fastgpt.run/api";
+                } else if (domain === 'custom') {
+                    // 保持当前值，允许用户自定义
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

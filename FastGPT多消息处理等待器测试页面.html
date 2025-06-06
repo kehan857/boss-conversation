@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastGPT多消息处理等待器测试</title>
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #f5222d;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+            --border-color: #e8e8e8;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: var(--light-bg);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #40a9ff;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .input-container input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            max-width: 80%;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background-color: white;
+            border: 1px solid var(--border-color);
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+        
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #888;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        
+        .log-container {
+            height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fafafa;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .log-info { color: var(--primary-color); }
+        .log-success { color: var(--success-color); }
+        .log-warning { color: var(--warning-color); }
+        .log-error { color: var(--error-color); }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .small-text {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>FastGPT多消息处理等待器测试</h1>
+    
+    <div class="container">
+        <!-- API配置面板 -->
+        <div class="panel full-width">
+            <h2>API配置</h2>
+            <div class="form-group">
+                <label for="api-url">FastGPT API URL:</label>
+                <input type="url" id="api-url" value="https://api.fastgpt.in" placeholder="输入FastGPT API的地址">
+            </div>
+            <div class="form-group">
+                <label for="api-key">API Key:</label>
+                <input type="text" id="api-key" value="" placeholder="输入FastGPT API的密钥">
+            </div>
+            <div class="form-group">
+                <label for="model-id">模型ID (或增强回复插件ID):</label>
+                <input type="text" id="model-id" value="gpt-3.5-turbo" placeholder="输入模型ID或增强回复插件ID">
+            </div>
+        </div>
+        
+        <!-- 参数配置面板 -->
+        <div class="panel">
+            <h2>等待器参数配置</h2>
+            <div class="form-group">
+                <label for="time-threshold">时间阈值 (毫秒):</label>
+                <input type="number" id="time-threshold" value="10000" min="1000" step="1000">
+                <span class="small-text">连续消息的最大等待时间，超过此时间将触发回复</span>
+            </div>
+            <div class="form-group">
+                <label for="message-threshold">消息数阈值:</label>
+                <input type="number" id="message-threshold" value="5" min="1">
+                <span class="small-text">连续消息的最大累积数量，超过此数量将触发回复</span>
+            </div>
+            <div class="form-group">
+                <label for="timeout-duration">API超时时间 (毫秒):</label>
+                <input type="number" id="timeout-duration" value="15000" min="5000" step="1000">
+            </div>
+        </div>
+        
+        <!-- 当前状态面板 -->
+        <div class="panel">
+            <h2>当前状态 <button id="reset-btn" style="float:right;font-size:12px;">重置</button></h2>
+            <div class="form-group">
+                <label>累积消息数:</label>
+                <div id="message-count">0</div>
+            </div>
+            <div class="form-group">
+                <label>上一条消息时间:</label>
+                <div id="last-message-time">未发送</div>
+            </div>
+            <div class="form-group">
+                <label>对话轮次:</label>
+                <div id="dialog-turns">0</div>
+            </div>
+            <div class="form-group">
+                <label>历史消息:</label>
+                <pre id="message-history">[]</pre>
+            </div>
+        </div>
+        
+        <!-- 聊天界面 -->
+        <div class="panel full-width">
+            <h2>聊天测试</h2>
+            <div class="chat-container">
+                <div class="messages-container" id="messages-container"></div>
+                <div class="input-container">
+                    <input type="text" id="chat-input" placeholder="输入消息..." onkeydown="if(event.key === 'Enter') sendMessage()">
+                    <button id="send-btn">发送</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 调试和日志面板 -->
+        <div class="panel full-width">
+            <div class="tabs">
+                <div class="tab active" data-tab="logs">运行日志</div>
+                <div class="tab" data-tab="request">请求数据</div>
+                <div class="tab" data-tab="response">响应数据</div>
+            </div>
+            
+            <div class="tab-content active" id="logs-tab">
+                <div class="log-container" id="log-container"></div>
+            </div>
+            
+            <div class="tab-content" id="request-tab">
+                <pre id="request-debug">等待发送请求...</pre>
+            </div>
+            
+            <div class="tab-content" id="response-tab">
+                <pre id="response-debug">等待接收响应...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let messageHistory = [];
+        let lastMessageTime = 0;
+        let messageCount = 0;
+        let dialogTurns = 0;
+        let activeRequestId = null;
+        let requestInProgress = false;
+        
+        // DOM元素
+        const apiUrlInput = document.getElementById('api-url');
+        const apiKeyInput = document.getElementById('api-key');
+        const modelIdInput = document.getElementById('model-id');
+        const timeThresholdInput = document.getElementById('time-threshold');
+        const messageThresholdInput = document.getElementById('message-threshold');
+        const timeoutDurationInput = document.getElementById('timeout-duration');
+        const messageCountEl = document.getElementById('message-count');
+        const lastMessageTimeEl = document.getElementById('last-message-time');
+        const dialogTurnsEl = document.getElementById('dialog-turns');
+        const messageHistoryEl = document.getElementById('message-history');
+        const messagesContainer = document.getElementById('messages-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const logContainer = document.getElementById('log-container');
+        const requestDebug = document.getElementById('request-debug');
+        const responseDebug = document.getElementById('response-debug');
+        
+        // 初始化标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        // 发送消息
+        async function sendMessage() {
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return;
+            
+            const apiUrl = apiUrlInput.value.trim();
+            const apiKey = apiKeyInput.value.trim();
+            
+            if (!apiUrl || !apiKey) {
+                addLog('请填写API URL和API Key', 'error');
+                return;
+            }
+            
+            // 添加用户消息到界面
+            addMessageToChat(userMessage, 'user');
+            chatInput.value = '';
+            
+            // 生成请求ID
+            const requestId = Date.now().toString();
+            activeRequestId = requestId;
+            
+            // 发送请求
+            const timeoutDuration = parseInt(timeoutDurationInput.value);
+            sendRequestWithTimeout(apiUrl, apiKey, userMessage, timeoutDuration, requestId);
+        }
+        
+        // 使用超时机制发送请求
+        async function sendRequestWithTimeout(apiUrl, apiKey, userMessage, timeoutDuration, requestId) {
+            // 标记请求正在进行中
+            requestInProgress = true;
+            
+            // 添加日志
+            addLog(`发送请求: ${userMessage}`, 'info');
+            
+            try {
+                // 创建一个超时Promise
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => {
+                        if (activeRequestId === requestId) {
+                            reject(new Error('请求超时'));
+                        }
+                    }, timeoutDuration);
+                });
+                
+                // 创建API请求Promise
+                const fetchPromise = callFastGPTApi(apiUrl, apiKey, userMessage, requestId);
+                
+                // 使用Promise.race比较哪个先完成
+                const result = await Promise.race([fetchPromise, timeoutPromise]);
+                
+                // 如果请求ID不匹配（说明已经发起了新的请求），忽略此响应
+                if (activeRequestId !== requestId) {
+                    addLog(`忽略过期的响应 (${requestId})`, 'warning');
+                    return;
+                }
+                
+                // 处理结果
+                handleApiResponse(result, userMessage);
+                
+                // 标记请求完成
+                requestInProgress = false;
+                
+            } catch (error) {
+                addLog(`请求失败: ${error.message}`, 'error');
+                // 标记请求完成
+                requestInProgress = false;
+            }
+        }
+        
+        // 调用FastGPT API
+        async function callFastGPTApi(apiUrl, apiKey, userMessage, requestId) {
+            try {
+                // 处理请求URL
+                const processedUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+                
+                // 获取参数
+                const timeThreshold = parseInt(timeThresholdInput.value);
+                const messageThreshold = parseInt(messageThresholdInput.value);
+                const modelId = modelIdInput.value.trim();
+                
+                // 根据FastGPT文档构建请求体
+                const requestBody = {
+                    stream: false,
+                    detail: true,
+                    variables: {
+                        userMessage: userMessage,
+                        messageHistory: messageHistory,
+                        lastMessageTime: lastMessageTime.toString(),
+                        messageThreshold: messageThreshold,
+                        messageCount: messageCount,
+                        timeThreshold: timeThreshold,
+                        dialogTurns: dialogTurns
+                    },
+                    messages: [{
+                        role: "user",
+                        content: userMessage
+                    }]
+                };
+                
+                // 如果指定了模型ID，添加到请求中
+                if (modelId) {
+                    requestBody.model = modelId;
+                }
+                
+                // 添加日志
+                addLog(`请求URL: ${processedUrl}/v1/chat/completions`, 'info');
+                addLog(`发送变量: lastMessageTime=${lastMessageTime}, messageCount=${messageCount}, dialogTurns=${dialogTurns}`, 'info');
+                
+                // 更新请求调试面板
+                requestDebug.textContent = JSON.stringify({
+                    url: `${processedUrl}/v1/chat/completions`,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: requestBody
+                }, null, 2);
+                
+                // 显示正在输入指示器
+                addTypingIndicator();
+                
+                // 发送请求
+                const response = await fetch(`${processedUrl}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    removeTypingIndicator();
+                    throw new Error(`API请求失败 (${response.status}): ${errorText}`);
+                }
+                
+                // 解析响应
+                const responseData = await response.json();
+                
+                // 更新响应调试面板
+                responseDebug.textContent = JSON.stringify(responseData, null, 2);
+                
+                // 移除输入指示器
+                removeTypingIndicator();
+                
+                return responseData;
+                
+            } catch (error) {
+                removeTypingIndicator();
+                responseDebug.textContent = `请求异常: ${error.message}`;
+                throw error;
+            }
+        }
+        
+        // 处理API响应
+        function handleApiResponse(responseData, userMessage) {
+            // 添加日志
+            addLog('收到API响应', 'success');
+            
+            try {
+                // 检查响应是否包含choices
+                if (responseData.choices && responseData.choices.length > 0) {
+                    const aiMessage = responseData.choices[0].message;
+                    
+                    if (aiMessage && aiMessage.content) {
+                        // 尝试从内容中提取工作流输出（如果存在）
+                        let workflowOutput = null;
+                        try {
+                            // 尝试解析回复中可能包含的JSON
+                            const contentStr = aiMessage.content.trim();
+                            if (contentStr.startsWith('{') && contentStr.endsWith('}')) {
+                                workflowOutput = JSON.parse(contentStr);
+                            }
+                        } catch (e) {
+                            addLog('解析工作流输出失败，将使用原始回复', 'warning');
+                        }
+                        
+                        // 如果成功解析出工作流输出
+                        if (workflowOutput && workflowOutput.shouldReply !== undefined) {
+                            // 提取shouldReply标志
+                            const shouldReply = workflowOutput.shouldReply;
+                            
+                            // 根据shouldReply决定是否显示回复
+                            if (shouldReply) {
+                                // 如果应该回复，查找AI回复内容
+                                addLog('shouldReply=true，显示AI回复', 'info');
+                                
+                                // 更新状态变量
+                                if (workflowOutput.lastMessageTime) {
+                                    lastMessageTime = parseInt(workflowOutput.lastMessageTime);
+                                    lastMessageTimeEl.textContent = new Date(lastMessageTime).toLocaleString();
+                                }
+                                
+                                if (workflowOutput.messageCount !== undefined) {
+                                    messageCount = workflowOutput.messageCount;
+                                    messageCountEl.textContent = messageCount;
+                                }
+                                
+                                if (workflowOutput.dialogTurns !== undefined) {
+                                    dialogTurns = workflowOutput.dialogTurns;
+                                    dialogTurnsEl.textContent = dialogTurns;
+                                }
+                                
+                                if (workflowOutput.messageHistory !== undefined) {
+                                    messageHistory = workflowOutput.messageHistory;
+                                    messageHistoryEl.textContent = JSON.stringify(messageHistory, null, 2);
+                                }
+                                
+                                addMessageToChat("我已收到您的消息，正在处理...", 'ai');
+                            } else {
+                                // 如果不应该回复，仅更新状态变量
+                                addLog('shouldReply=false，不显示回复', 'info');
+                                
+                                // 更新状态变量
+                                if (workflowOutput.lastMessageTime) {
+                                    lastMessageTime = parseInt(workflowOutput.lastMessageTime);
+                                    lastMessageTimeEl.textContent = new Date(lastMessageTime).toLocaleString();
+                                }
+                                
+                                if (workflowOutput.messageCount !== undefined) {
+                                    messageCount = workflowOutput.messageCount;
+                                    messageCountEl.textContent = messageCount;
+                                }
+                                
+                                if (workflowOutput.dialogTurns !== undefined) {
+                                    dialogTurns = workflowOutput.dialogTurns;
+                                    dialogTurnsEl.textContent = dialogTurns;
+                                }
+                                
+                                if (workflowOutput.messageHistory !== undefined) {
+                                    messageHistory = workflowOutput.messageHistory;
+                                    messageHistoryEl.textContent = JSON.stringify(messageHistory, null, 2);
+                                }
+                            }
+                        } else {
+                            // 未找到工作流输出或无shouldReply标志，直接显示AI回复
+                            addLog('未检测到工作流输出或shouldReply标志，直接显示AI回复', 'warning');
+                            addMessageToChat(aiMessage.content, 'ai');
+                        }
+                    } else {
+                        addLog('AI回复内容为空', 'warning');
+                    }
+                } else {
+                    addLog('响应格式不正确或为空', 'error');
+                }
+            } catch (error) {
+                addLog(`处理响应出错: ${error.message}`, 'error');
+                console.error('处理响应详细错误:', error);
+            }
+        }
+        
+        // 添加消息到聊天界面
+        function addMessageToChat(message, role) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${role}-message`;
+            messageEl.innerText = message;
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 添加正在输入指示器
+        function addTypingIndicator() {
+            // 先移除可能已存在的输入指示器
+            removeTypingIndicator();
+            
+            const indicatorEl = document.createElement('div');
+            indicatorEl.className = 'typing-indicator';
+            indicatorEl.id = 'typing-indicator';
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'dot';
+                indicatorEl.appendChild(dot);
+            }
+            
+            messagesContainer.appendChild(indicatorEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 移除正在输入指示器
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        // 添加日志
+        function addLog(message, level = 'info') {
+            const logEntry = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.className = `log-entry log-${level}`;
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // 重置状态
+        function resetState() {
+            messageHistory = [];
+            lastMessageTime = 0;
+            messageCount = 0;
+            dialogTurns = 0;
+            
+            // 更新UI
+            messageCountEl.textContent = '0';
+            lastMessageTimeEl.textContent = '未发送';
+            dialogTurnsEl.textContent = '0';
+            messageHistoryEl.textContent = '[]';
+            
+            // 清空聊天记录
+            messagesContainer.innerHTML = '';
+            
+            // 添加日志
+            addLog('已重置所有状态', 'info');
+        }
+        
+        // 处理URL，确保以/结尾
+        function processUrl(url) {
+            if (!url) return '';
+            return url.endsWith('/') ? url.slice(0, -1) : url;
+        }
+        
+        // 事件监听器
+        sendBtn.addEventListener('click', sendMessage);
+        resetBtn.addEventListener('click', resetState);
+        
+        // 初始化日志
+        addLog('页面已加载，等待操作', 'info');
+        addLog('提示: 连续发送多条消息时，如果shouldReply=false，将不显示回复', 'info');
+    </script>
+</body>
+</html> 

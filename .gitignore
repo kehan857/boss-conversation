@@ -1,7 +1,4 @@
-# 依赖目录
-node_modules/
-
-# 操作系统生成的文件
+# macOS
 .DS_Store
 .DS_Store?
 ._*
@@ -10,19 +7,21 @@ node_modules/
 ehthumbs.db
 Thumbs.db
 
-# 日志文件
-*.log
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# 临时文件
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
 *.tmp
 *.temp
 
-# 编辑器配置
-.vscode/
-.idea/
-
-# 包管理器文件
-package-lock.json
-
-# 缓存文件
-.cache/ 
+# Nested git repositories
+github-pages/ 

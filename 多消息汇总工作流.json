@@ -1,0 +1,547 @@
+{
+  "nodes": [
+    {
+      "nodeId": "userInput",
+      "name": "用户输入",
+      "type": "userInput",
+      "flowNodeType": "userInput",
+      "position": {
+        "x": 326.25,
+        "y": 90.5
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "key": "userChatInput",
+          "targets": [
+            {
+              "nodeId": "handleMultiMessage",
+              "key": "userMessage"
+            }
+          ],
+          "type": "static",
+          "label": "用户输入",
+          "valueType": "string"
+        }
+      ]
+    },
+    {
+      "nodeId": "handleMultiMessage",
+      "name": "多消息汇总处理",
+      "type": "plugin",
+      "flowNodeType": "plugin",
+      "position": {
+        "x": 327.25,
+        "y": 220.5
+      },
+      "inputs": [
+        {
+          "key": "userMessage",
+          "type": "string",
+          "value": "",
+          "label": "用户消息",
+          "connected": true,
+          "renderTypeList": ["textarea", "reference"],
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "messageHistory",
+          "type": "array",
+          "value": [],
+          "label": "消息历史",
+          "connected": false,
+          "renderTypeList": ["input", "reference"],
+          "valueType": "array"
+        },
+        {
+          "key": "lastMessageTime",
+          "type": "number",
+          "value": 0,
+          "label": "上次消息时间",
+          "connected": false,
+          "renderTypeList": ["numberInput", "reference"],
+          "valueType": "number"
+        },
+        {
+          "key": "messageThreshold",
+          "type": "number",
+          "value": 10,
+          "label": "消息数阈值",
+          "connected": false,
+          "renderTypeList": ["numberInput", "reference"],
+          "valueType": "number"
+        },
+        {
+          "key": "timeThreshold",
+          "type": "number",
+          "value": 5000,
+          "label": "时间阈值",
+          "connected": false,
+          "renderTypeList": ["numberInput", "reference"],
+          "valueType": "number"
+        },
+        {
+          "key": "messageCount",
+          "type": "number",
+          "value": 0,
+          "label": "消息计数",
+          "connected": true,
+          "renderTypeList": ["numberInput", "reference"],
+          "valueType": "number"
+        }
+      ],
+      "outputs": [
+        {
+          "key": "shouldReply",
+          "targets": [
+            {
+              "nodeId": "replyControl",
+              "key": "condition"
+            }
+          ],
+          "type": "static",
+          "label": "是否回复",
+          "valueType": "boolean"
+        },
+        {
+          "key": "updatedMessageHistory",
+          "targets": [
+            {
+              "nodeId": "globalMessageHistory",
+              "key": "value"
+            }
+          ],
+          "type": "static",
+          "label": "更新后的消息历史",
+          "valueType": "array"
+        },
+        {
+          "key": "combinedMessage",
+          "targets": [
+            {
+              "nodeId": "replyControl",
+              "key": "combinedMessages"
+            }
+          ],
+          "type": "static",
+          "label": "合并后的消息",
+          "valueType": "string"
+        },
+        {
+          "key": "lastMessageTime",
+          "targets": [
+            {
+              "nodeId": "globalLastMsgTime",
+              "key": "value"
+            }
+          ],
+          "type": "static",
+          "label": "上次消息时间",
+          "valueType": "number"
+        },
+        {
+          "key": "messageCount",
+          "targets": [
+            {
+              "nodeId": "globalMessageCount",
+              "key": "value"
+            }
+          ],
+          "type": "static",
+          "label": "更新后的消息计数",
+          "valueType": "number"
+        }
+      ],
+      "pluginId": "多消息汇总插件",
+      "pluginType": "plugin",
+      "showStatus": true
+    },
+    {
+      "nodeId": "globalMessageHistory",
+      "name": "消息历史(全局变量)",
+      "type": "variable",
+      "flowNodeType": "variable",
+      "position": {
+        "x": 137.25,
+        "y": 350.5
+      },
+      "inputs": [
+        {
+          "key": "value",
+          "type": "array",
+          "value": [],
+          "label": "变量值",
+          "connected": true,
+          "valueType": "array"
+        }
+      ],
+      "outputs": [
+        {
+          "key": "value",
+          "targets": [
+            {
+              "nodeId": "handleMultiMessage",
+              "key": "messageHistory"
+            }
+          ],
+          "type": "static",
+          "label": "变量值",
+          "valueType": "array"
+        }
+      ],
+      "variableId": "messageHistory",
+      "variableType": "global"
+    },
+    {
+      "nodeId": "globalLastMsgTime",
+      "name": "上次消息时间(全局变量)",
+      "type": "variable",
+      "flowNodeType": "variable",
+      "position": {
+        "x": 137.25,
+        "y": 480.5
+      },
+      "inputs": [
+        {
+          "key": "value",
+          "type": "number",
+          "value": 0,
+          "label": "变量值",
+          "connected": true,
+          "valueType": "number"
+        }
+      ],
+      "outputs": [
+        {
+          "key": "value",
+          "targets": [
+            {
+              "nodeId": "handleMultiMessage",
+              "key": "lastMessageTime"
+            }
+          ],
+          "type": "static",
+          "label": "变量值",
+          "valueType": "number"
+        }
+      ],
+      "variableId": "lastMessageTime",
+      "variableType": "global"
+    },
+    {
+      "nodeId": "globalMessageCount",
+      "name": "消息计数(全局变量)",
+      "type": "variable",
+      "flowNodeType": "variable",
+      "position": {
+        "x": 137.25,
+        "y": 610.5
+      },
+      "inputs": [
+        {
+          "key": "value",
+          "type": "number",
+          "value": 0,
+          "label": "变量值",
+          "connected": true,
+          "valueType": "number"
+        }
+      ],
+      "outputs": [
+        {
+          "key": "value",
+          "targets": [
+            {
+              "nodeId": "handleMultiMessage",
+              "key": "messageCount"
+            }
+          ],
+          "type": "static",
+          "label": "变量值",
+          "valueType": "number"
+        }
+      ],
+      "variableId": "messageCount",
+      "variableType": "global"
+    },
+    {
+      "nodeId": "replyControl",
+      "name": "回复控制",
+      "type": "condition",
+      "flowNodeType": "condition",
+      "position": {
+        "x": 529.25,
+        "y": 350.5
+      },
+      "inputs": [
+        {
+          "key": "condition",
+          "type": "boolean",
+          "value": false,
+          "label": "条件",
+          "connected": true,
+          "valueType": "boolean",
+          "renderTypeList": ["switch", "reference"]
+        },
+        {
+          "key": "combinedMessages",
+          "type": "string",
+          "value": "",
+          "label": "合并消息",
+          "connected": true,
+          "valueType": "string",
+          "renderTypeList": ["textarea", "reference"]
+        }
+      ],
+      "outputs": [
+        {
+          "key": "true",
+          "targets": [
+            {
+              "nodeId": "aiReply",
+              "key": "userChatInput"
+            }
+          ],
+          "type": "static",
+          "label": "条件为真",
+          "valueType": "any"
+        },
+        {
+          "key": "false",
+          "targets": [],
+          "type": "static",
+          "label": "条件为假",
+          "valueType": "any"
+        }
+      ]
+    },
+    {
+      "nodeId": "aiReply",
+      "name": "AI回复",
+      "type": "chatNode",
+      "flowNodeType": "chatNode",
+      "position": {
+        "x": 529.25,
+        "y": 480.5
+      },
+      "inputs": [
+        {
+          "key": "userChatInput",
+          "type": "string",
+          "value": "",
+          "label": "用户输入",
+          "connected": true,
+          "valueType": "string",
+          "renderTypeList": ["textarea", "reference"],
+          "required": true
+        },
+        {
+          "key": "systemPrompt",
+          "type": "string",
+          "value": "你是一个销售助手，请根据用户的多条消息内容，综合分析并回复。",
+          "label": "系统提示词",
+          "connected": false,
+          "valueType": "string",
+          "renderTypeList": ["textarea", "reference"]
+        },
+        {
+          "key": "history",
+          "type": "chatHistory",
+          "value": [],
+          "label": "聊天历史",
+          "connected": false,
+          "valueType": "chatHistory",
+          "renderTypeList": ["numberInput", "reference"]
+        },
+        {
+          "key": "quoteQA",
+          "type": "datasetQuote",
+          "value": [],
+          "label": "引用内容",
+          "connected": false,
+          "valueType": "datasetQuote",
+          "renderTypeList": ["settingDatasetQuotePrompt"]
+        },
+        {
+          "key": "model",
+          "type": "string",
+          "value": "",
+          "label": "模型",
+          "connected": false,
+          "valueType": "string",
+          "renderTypeList": ["settingLLMModel", "reference"]
+        },
+        {
+          "key": "temperature",
+          "type": "number",
+          "value": 0,
+          "label": "温度",
+          "connected": false,
+          "valueType": "number",
+          "renderTypeList": ["numberInput", "reference"]
+        },
+        {
+          "key": "maxToken",
+          "type": "number",
+          "value": 0,
+          "label": "最大Token",
+          "connected": false,
+          "valueType": "number",
+          "renderTypeList": ["numberInput", "reference"]
+        }
+      ],
+      "outputs": [
+        {
+          "key": "answerText",
+          "targets": [
+            {
+              "nodeId": "output",
+              "key": "answerText"
+            }
+          ],
+          "type": "static",
+          "label": "AI回复内容",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "history",
+          "targets": [],
+          "type": "static",
+          "label": "新的上下文",
+          "valueType": "chatHistory",
+          "required": true
+        }
+      ]
+    },
+    {
+      "nodeId": "output",
+      "name": "对话输出",
+      "type": "output",
+      "flowNodeType": "output",
+      "position": {
+        "x": 529.25,
+        "y": 610.5
+      },
+      "inputs": [
+        {
+          "key": "answerText",
+          "type": "string",
+          "value": "",
+          "label": "回复内容",
+          "connected": true,
+          "valueType": "string",
+          "required": true
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "userInput",
+      "target": "handleMultiMessage",
+      "sourceHandle": "userChatInput",
+      "targetHandle": "userMessage"
+    },
+    {
+      "source": "handleMultiMessage",
+      "target": "replyControl",
+      "sourceHandle": "shouldReply",
+      "targetHandle": "condition"
+    },
+    {
+      "source": "handleMultiMessage",
+      "target": "globalMessageHistory",
+      "sourceHandle": "updatedMessageHistory",
+      "targetHandle": "value"
+    },
+    {
+      "source": "handleMultiMessage",
+      "target": "replyControl",
+      "sourceHandle": "combinedMessage",
+      "targetHandle": "combinedMessages"
+    },
+    {
+      "source": "handleMultiMessage",
+      "target": "globalLastMsgTime",
+      "sourceHandle": "lastMessageTime",
+      "targetHandle": "value"
+    },
+    {
+      "source": "handleMultiMessage",
+      "target": "globalMessageCount",
+      "sourceHandle": "messageCount",
+      "targetHandle": "value"
+    },
+    {
+      "source": "globalMessageHistory",
+      "target": "handleMultiMessage",
+      "sourceHandle": "value",
+      "targetHandle": "messageHistory"
+    },
+    {
+      "source": "globalLastMsgTime",
+      "target": "handleMultiMessage",
+      "sourceHandle": "value",
+      "targetHandle": "lastMessageTime"
+    },
+    {
+      "source": "globalMessageCount",
+      "target": "handleMultiMessage",
+      "sourceHandle": "value",
+      "targetHandle": "messageCount"
+    },
+    {
+      "source": "replyControl",
+      "target": "aiReply",
+      "sourceHandle": "true",
+      "targetHandle": "userChatInput"
+    },
+    {
+      "source": "aiReply",
+      "target": "output",
+      "sourceHandle": "answerText",
+      "targetHandle": "answerText"
+    }
+  ],
+  "metadata": {
+    "name": "多消息汇总销售智能体",
+    "description": "当客户短时间内发送多条消息时，避免打断客户的表达，等待客户输入完成后再统一回复",
+    "avatar": "💬",
+    "updateTime": 1714373724984,
+    "pluginVersion": "1.0.0",
+    "type": "chat",
+    "version": "1.0",
+    "appType": "chat",
+    "flowNodeType": "root",
+    "variables": [
+      {
+        "id": "messageHistory",
+        "key": "messageHistory",
+        "type": "array",
+        "defaultValue": [],
+        "label": "消息历史",
+        "valueType": "array"
+      },
+      {
+        "id": "lastMessageTime",
+        "key": "lastMessageTime",
+        "type": "number",
+        "defaultValue": 0,
+        "label": "上次消息时间",
+        "valueType": "number"
+      },
+      {
+        "id": "messageCount",
+        "key": "messageCount",
+        "type": "number",
+        "defaultValue": 0,
+        "label": "消息计数",
+        "valueType": "number"
+      }
+    ]
+  },
+  "runningTime": 17
+} 
