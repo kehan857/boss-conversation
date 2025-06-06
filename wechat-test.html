@@ -583,6 +583,7 @@
             let chatSessionId = 'session_' + Date.now();
             let timerInterval = null;
             let timerStartTime = null;
+            let hasFoundStreamContent = false; // 全局标记是否已经找到流式内容
             
             // 事件监听器
             userInput.addEventListener('keydown', function(e) {
@@ -762,10 +763,15 @@
                         
                         for (const line of lines) {
                             if (line.trim()) {
-                                const newReplies = await processFastGPTStreamLine(line.trim(), processedNodeIds, processedContents);
-                                if (newReplies.length > 0) {
-                                    replyCount += newReplies.length;
-                                    addLog(`🎯 FastGPT流中发现${newReplies.length}条新回复，累计${replyCount}条`, 'success');
+                                const result = await processFastGPTStreamLine(line.trim(), processedNodeIds, processedContents, hasFoundStreamContent);
+                                if (result.newReplies.length > 0) {
+                                    replyCount += result.newReplies.length;
+                                    addLog(`🎯 FastGPT流中发现${result.newReplies.length}条新回复，累计${replyCount}条`, 'success');
+                                }
+                                // 更新全局流式内容标记
+                                if (result.hasStreamContent) {
+                                    hasFoundStreamContent = true;
+                                    addLog(`🔒 检测到流式内容，后续将跳过传统节点搜索`, 'info');
                                 }
                                 
                                 // 保存最后的有效数据作为完整响应
@@ -779,9 +785,12 @@
                     
                     // 处理缓冲区中剩余的数据
                     if (buffer.trim()) {
-                        const newReplies = await processFastGPTStreamLine(buffer.trim(), processedNodeIds, processedContents);
-                        if (newReplies.length > 0) {
-                            replyCount += newReplies.length;
+                        const result = await processFastGPTStreamLine(buffer.trim(), processedNodeIds, processedContents, hasFoundStreamContent);
+                        if (result.newReplies.length > 0) {
+                            replyCount += result.newReplies.length;
+                        }
+                        if (result.hasStreamContent) {
+                            hasFoundStreamContent = true;
                         }
                         
                         const parsedData = tryParseStreamLine(buffer.trim());
@@ -794,6 +803,9 @@
                     if (completeResponseData) {
                         displayResponseMessage(completeResponseData, true);
                     }
+                    
+                    // 记录最终统计
+                    addLog(`📊 流式处理总结: 流式内容=${hasFoundStreamContent}, 总回复数=${replyCount}`, 'success');
                     
                     // 处理定时任务逻辑
                     if (!isTimerTriggered && completeResponseData) {
@@ -810,10 +822,11 @@
             }
             
             // 处理FastGPT流式数据行
-            async function processFastGPTStreamLine(line, processedNodeIds, processedContents) {
+            async function processFastGPTStreamLine(line, processedNodeIds, processedContents, hasFoundStreamContent) {
                 addLog(`📡 收到FastGPT数据: ${line.substring(0, 150)}${line.length > 150 ? '...' : ''}`, 'info');
                 
                 const foundReplies = [];
+                let hasStreamContent = false;
                 
                 try {
                     // 处理Server-Sent Events格式
@@ -825,14 +838,12 @@
                     // 跳过event行和控制消息
                     if (line.startsWith('event:') || jsonData === '[DONE]' || jsonData === '' || jsonData === 'ping') {
                         addLog(`📋 收到控制消息: ${line.startsWith('event:') ? line : jsonData || 'empty'}`, 'info');
-                        return foundReplies;
+                        return { newReplies: foundReplies, hasStreamContent: false };
                     }
                     
                     // 解析JSON数据
                     const data = JSON.parse(jsonData);
                     addLog(`✅ FastGPT数据解析成功`, 'info');
-                    
-                    let hasStreamContent = false; // 标记是否有流式内容
                     
                     // 检查是否有choices数组和delta内容
                     if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
@@ -840,15 +851,16 @@
                         if (choice.delta && choice.delta.content) {
                             const content = choice.delta.content.trim();
                             if (content) {
+                                hasStreamContent = true; // 标记发现了流式内容
+                                
                                 // 检查内容是否已经处理过
                                 const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
                                 if (processedContents.has(contentHash)) {
                                     addLog(`⚠️ 检测到重复的流式内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
-                                    return foundReplies;
+                                    return { newReplies: foundReplies, hasStreamContent: true };
                                 }
                                 
                                 processedContents.add(contentHash); // 标记内容已处理
-                                hasStreamContent = true; // 标记已有流式内容
                                 
                                 // 记录发现有效回复的时间
                                 const foundTime = Date.now();
@@ -892,20 +904,22 @@
                         }
                     }
                     
-                    // 只有在没有流式内容时才搜索传统的指定回复节点（作为备用）
-                    if (!hasStreamContent) {
-                        addLog(`🔄 未检测到流式内容，搜索传统指定回复节点`, 'info');
+                    // 只有在没有流式内容且全局也没有发现过流式内容时才搜索传统的指定回复节点
+                    if (!hasStreamContent && !hasFoundStreamContent) {
+                        addLog(`🔄 未检测到流式内容且全局无流式内容，搜索传统指定回复节点`, 'info');
                         const traditionalReplies = await searchRepliesInStreamData(data, processedNodeIds, processedContents);
                         foundReplies.push(...traditionalReplies);
-                    } else {
+                    } else if (hasStreamContent) {
                         addLog(`✅ 已处理流式内容，跳过传统节点搜索避免重复`, 'info');
+                    } else if (hasFoundStreamContent) {
+                        addLog(`🔒 全局已发现流式内容，跳过传统节点搜索避免重复`, 'info');
                     }
                     
                 } catch (error) {
                     addLog(`⚠️ FastGPT数据解析失败: ${error.message}`, 'warning');
                 }
                 
-                return foundReplies;
+                return { newReplies: foundReplies, hasStreamContent: hasStreamContent };
             }
             
             // 尝试解析流式数据行（不显示错误）
