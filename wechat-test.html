@@ -738,6 +738,7 @@
                 let buffer = '';
                 let replyCount = 0;
                 let processedNodeIds = new Set(); // 防止重复处理同一个节点
+                let processedContents = new Set(); // 防止重复处理相同内容
                 let completeResponseData = null; // 保存最后的完整响应数据
                 
                 addLog(`🔄 开始监控FastGPT流式数据流...`, 'info');
@@ -761,7 +762,7 @@
                         
                         for (const line of lines) {
                             if (line.trim()) {
-                                const newReplies = await processFastGPTStreamLine(line.trim(), processedNodeIds);
+                                const newReplies = await processFastGPTStreamLine(line.trim(), processedNodeIds, processedContents);
                                 if (newReplies.length > 0) {
                                     replyCount += newReplies.length;
                                     addLog(`🎯 FastGPT流中发现${newReplies.length}条新回复，累计${replyCount}条`, 'success');
@@ -778,7 +779,7 @@
                     
                     // 处理缓冲区中剩余的数据
                     if (buffer.trim()) {
-                        const newReplies = await processFastGPTStreamLine(buffer.trim(), processedNodeIds);
+                        const newReplies = await processFastGPTStreamLine(buffer.trim(), processedNodeIds, processedContents);
                         if (newReplies.length > 0) {
                             replyCount += newReplies.length;
                         }
@@ -809,7 +810,7 @@
             }
             
             // 处理FastGPT流式数据行
-            async function processFastGPTStreamLine(line, processedNodeIds) {
+            async function processFastGPTStreamLine(line, processedNodeIds, processedContents) {
                 addLog(`📡 收到FastGPT数据: ${line.substring(0, 150)}${line.length > 150 ? '...' : ''}`, 'info');
                 
                 const foundReplies = [];
@@ -831,12 +832,24 @@
                     const data = JSON.parse(jsonData);
                     addLog(`✅ FastGPT数据解析成功`, 'info');
                     
+                    let hasStreamContent = false; // 标记是否有流式内容
+                    
                     // 检查是否有choices数组和delta内容
                     if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
                         const choice = data.choices[0];
                         if (choice.delta && choice.delta.content) {
                             const content = choice.delta.content.trim();
                             if (content) {
+                                // 检查内容是否已经处理过
+                                const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
+                                if (processedContents.has(contentHash)) {
+                                    addLog(`⚠️ 检测到重复的流式内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
+                                    return foundReplies;
+                                }
+                                
+                                processedContents.add(contentHash); // 标记内容已处理
+                                hasStreamContent = true; // 标记已有流式内容
+                                
                                 // 记录发现有效回复的时间
                                 const foundTime = Date.now();
                                 const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
@@ -872,15 +885,21 @@
                                     displayTime: displayTimeDisplay,
                                     processingDuration: processingDuration,
                                     totalDuration: totalDuration,
-                                    choiceIndex: choice.index || 0
+                                    choiceIndex: choice.index || 0,
+                                    source: 'stream' // 标记来源为流式输出
                                 });
                             }
                         }
                     }
                     
-                    // 同时也搜索传统的指定回复节点（作为备用）
-                    const traditionalReplies = await searchRepliesInStreamData(data, processedNodeIds);
-                    foundReplies.push(...traditionalReplies);
+                    // 只有在没有流式内容时才搜索传统的指定回复节点（作为备用）
+                    if (!hasStreamContent) {
+                        addLog(`🔄 未检测到流式内容，搜索传统指定回复节点`, 'info');
+                        const traditionalReplies = await searchRepliesInStreamData(data, processedNodeIds, processedContents);
+                        foundReplies.push(...traditionalReplies);
+                    } else {
+                        addLog(`✅ 已处理流式内容，跳过传统节点搜索避免重复`, 'info');
+                    }
                     
                 } catch (error) {
                     addLog(`⚠️ FastGPT数据解析失败: ${error.message}`, 'warning');
@@ -908,7 +927,7 @@
             }
             
             // 在流式数据中搜索回复
-            async function searchRepliesInStreamData(data, processedNodeIds) {
+            async function searchRepliesInStreamData(data, processedNodeIds, processedContents) {
                 const foundReplies = [];
                 
                 if (!data || typeof data !== 'object') {
@@ -936,15 +955,24 @@
                             
                             // 检查是否已经处理过这个节点
                             if (!processedNodeIds.has(nodeId)) {
-                                // 记录发现有效回复的时间
-                                const foundTime = Date.now();
-                                const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
-                                const foundTimeISO = new Date().toISOString();
-                                
                                 processedNodeIds.add(nodeId);
                                 
                                 const content = String(obj.textOutput).trim();
                                 if (content) {
+                                    // 检查内容是否已经处理过
+                                    const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
+                                    if (processedContents.has(contentHash)) {
+                                        addLog(`⚠️ 检测到重复的节点内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
+                                        return; // 跳过重复内容
+                                    }
+                                    
+                                    processedContents.add(contentHash); // 标记内容已处理
+                                    
+                                    // 记录发现有效回复的时间
+                                    const foundTime = Date.now();
+                                    const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                                    const foundTimeISO = new Date().toISOString();
+                                    
                                     addLog(`🎯 [${foundTimeDisplay}] 发现有效回复信息`, 'success');
                                     addLog(`⏰ 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
                                     addLog(`📍 节点位置: ${path}`, 'info');
@@ -977,7 +1005,8 @@
                                         displayTime: displayTimeDisplay,
                                         processingDuration: processingDuration,
                                         totalDuration: totalDuration,
-                                        path: path
+                                        path: path,
+                                        source: 'traditional' // 标记来源为传统节点
                                     });
                                 }
                             } else {
