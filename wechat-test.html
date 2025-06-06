@@ -278,6 +278,18 @@
             font-size: 14px;
         }
         
+        /* 输入框提示样式 */
+        .input-hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .input-hint.active {
+            color: var(--primary-color);
+        }
+        
         /* 状态指示器 */
         .status-indicator {
             padding: 8px 12px;
@@ -492,6 +504,7 @@
                             <input type="text" id="userInput" placeholder="输入消息..." />
                             <button id="sendButton">发送</button>
                         </div>
+                        <div class="input-hint" id="inputHint">💡 提示：可以在AI回复过程中继续发送新消息</div>
                     </div>
                 </div>
             </div>
@@ -576,6 +589,7 @@
             
             // 全局变量
             let messageHistory = [];
+            let isWaitingForResponse = false;
             let currentTimer = null;
             let currentReadTime = null;
             let isTimeUp = null;
@@ -620,11 +634,16 @@
             async function sendMessage() {
                 const message = userInput.value.trim();
                 if (!message) {
-                    addLog('⚠️ 消息内容为空，请输入内容', 'warning');
                     return;
                 }
                 
-                // 中断当前定时任务（如果有的话）
+                // 如果当前正在等待响应，中断当前请求
+                if (isWaitingForResponse) {
+                    addLog('🛑 用户发送新消息，中断当前API请求', 'warning');
+                    // 这里可以添加中断当前请求的逻辑，但由于流式请求难以中断，我们允许并行处理
+                }
+                
+                // 中断当前定时任务
                 if (currentTimer) {
                     clearTimeout(currentTimer);
                     currentTimer = null;
@@ -645,16 +664,28 @@
                 addLog(`📝 收到用户消息: "${message}"`, 'info');
                 addLog(`📊 当前消息历史数量: ${messageHistory.length}`, 'info');
                 
-                // 发送API请求，传递当前消息（允许并发请求）
-                processApiRequest(false, message); // 不等待，允许用户继续发送
+                // 立即发送API请求，不检查isWaitingForResponse状态
+                await processApiRequest(false, message); // false表示不是定时任务触发的
             }
             
             // 处理API请求
             async function processApiRequest(isTimerTriggered = false, currentMessage = null) {
-                const requestId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                // 为每个请求分配唯一ID
+                const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 const requestType = isTimerTriggered ? '定时任务' : '用户输入';
                 
                 addLog(`🚀 [${requestId}] 开始处理${requestType}请求`, 'info');
+                
+                // 如果当前有正在处理的请求，记录并行处理状态
+                if (isWaitingForResponse) {
+                    addLog(`⚡ [${requestId}] 并行处理：当前已有请求在处理中`, 'info');
+                }
+                
+                // 标记正在处理（但不阻止新请求）
+                const wasWaiting = isWaitingForResponse;
+                isWaitingForResponse = true;
+                
+                showStatus(`🤖 [${requestId}] 正在处理${requestType}请求...`, 'waiting');
                 
                 try {
                     const apiKey = apiKeyInput.value.trim();
@@ -677,7 +708,7 @@
                     }
                     
                     const requestBody = {
-                        chatId: chatSessionId + '_' + requestId, // 使用唯一的chatId
+                        chatId: chatSessionId + '_' + requestId, // 每个请求使用独立的chatId
                         stream: true,  // 启用FastGPT流式输出
                         detail: true,
                         variables: {
@@ -715,9 +746,18 @@
                     // 处理FastGPT流式响应
                     await handleFastGPTStreamResponse(response, isTimerTriggered, requestId);
                     
+                    addLog(`✅ [${requestId}] ${requestType}请求处理完成`, 'success');
+                    
                 } catch (error) {
                     addLog(`❌ [${requestId}] API请求错误: ${error.message}`, 'error');
                     addMessage('AI', '抱歉，服务暂时不可用，请稍后再试。');
+                } finally {
+                    // 只有在没有其他请求等待时才重置状态
+                    if (!wasWaiting) {
+                        isWaitingForResponse = false;
+                        hideStatus();
+                    }
+                    addLog(`🏁 [${requestId}] 请求处理结束，等待状态: ${isWaitingForResponse}`, 'info');
                 }
             }
             
@@ -799,8 +839,8 @@
                     // 处理定时任务逻辑
                     if (!isTimerTriggered && completeResponseData) {
                         addLog(`🔍 [${requestId}] FastGPT流式处理完成，开始提取定时变量并处理定时任务`, 'info');
-                        await extractTimingVariables(completeResponseData, requestId);
-                        await handleTimerLogic(requestId);
+                        await extractTimingVariables(completeResponseData);
+                        await handleTimerLogic();
                     }
                     
                 } catch (error) {
@@ -896,7 +936,7 @@
                     // 只有在没有流式内容且全局也没有发现过流式内容时才搜索传统的指定回复节点
                     if (!hasStreamContent && !hasFoundStreamContent) {
                         addLog(`🔄 [${requestId}] 未检测到流式内容且全局无流式内容，搜索传统指定回复节点`, 'info');
-                        const traditionalReplies = await searchRepliesInStreamData(data, processedNodeIds, processedContents, requestId);
+                        const traditionalReplies = await searchRepliesInStreamData(data, processedNodeIds, processedContents);
                         foundReplies.push(...traditionalReplies);
                     } else if (hasStreamContent) {
                         addLog(`✅ [${requestId}] 已处理流式内容，跳过传统节点搜索避免重复`, 'info');
@@ -930,7 +970,7 @@
             }
             
             // 在流式数据中搜索回复
-            async function searchRepliesInStreamData(data, processedNodeIds, processedContents, requestId) {
+            async function searchRepliesInStreamData(data, processedNodeIds, processedContents) {
                 const foundReplies = [];
                 
                 if (!data || typeof data !== 'object') {
@@ -940,7 +980,7 @@
                 // 记录搜索开始时间
                 const searchStartTime = Date.now();
                 const searchStartDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
-                addLog(`🔍 [${requestId}] 开始搜索流式数据中的有效回复信息`, 'info');
+                addLog(`🔍 [${searchStartDisplay}] 开始搜索流式数据中的有效回复信息`, 'info');
                 
                 // 递归搜索并立即显示指定回复
                 function searchAndDisplayRecursive(obj, path = '') {
@@ -1033,13 +1073,13 @@
                 const searchEndDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
                 const searchDuration = searchEndTime - searchStartTime;
                 
-                addLog(`🔍 [${requestId}] 流式数据搜索完成，用时${searchDuration}ms，发现${foundReplies.length}个有效回复`, foundReplies.length > 0 ? 'success' : 'info');
+                addLog(`🔍 [${searchEndDisplay}] 流式数据搜索完成，用时${searchDuration}ms，发现${foundReplies.length}个有效回复`, foundReplies.length > 0 ? 'success' : 'info');
                 
                 // 如果找到了有效回复，输出汇总信息
                 if (foundReplies.length > 0) {
                     addLog(`📈 [${requestId}] 有效回复信息监控汇总:`, 'success');
                     foundReplies.forEach((reply, index) => {
-                        addLog(`  ${index + 1}. [${reply.foundTime}→${reply.displayTime}] 耗时${reply.totalDuration}ms 节点:${reply.nodeId}`, 'success');
+                        addLog(`  [${requestId}] ${index + 1}. [${reply.foundTime}→${reply.displayTime}] 耗时${reply.totalDuration}ms 节点:${reply.nodeId}`, 'success');
                     });
                 }
                 
@@ -1047,12 +1087,12 @@
             }
             
             // 提取定时相关变量
-            async function extractTimingVariables(responseData, requestId) {
+            async function extractTimingVariables(responseData) {
                 currentReadTime = null;
                 isTimeUp = null;
                 
                 if (!responseData || typeof responseData !== 'object') {
-                    addLog(`⚠️ [${requestId}] 响应数据无效，无法提取定时变量`, 'warning');
+                    addLog(`⚠️ 响应数据无效，无法提取定时变量`, 'warning');
                     return;
                 }
                 
@@ -1103,20 +1143,20 @@
             }
             
             // 处理定时任务逻辑
-            async function handleTimerLogic(requestId) {
+            async function handleTimerLogic() {
                 if (isTimeUp === true) {
-                    addLog(`✅ [${requestId}] isTimeUp=true，用户已获取到消息，不启动定时任务`, 'success');
+                    addLog(`✅ isTimeUp=true，用户已获取到消息，不启动定时任务`, 'success');
                     return;
                 }
                 
                 if (isTimeUp === false && currentReadTime > 0) {
                     // 修改为 2*readtime + 2秒
                     const timerDuration = 2 * currentReadTime + 2000; // 2*readtime + 2秒
-                    addLog(`⏳ [${requestId}] isTimeUp=false，启动定时任务，${timerDuration}ms后执行二次请求`, 'info');
-                    addLog(`📊 [${requestId}] 计算公式: 2 * ${currentReadTime}ms + 2000ms = ${timerDuration}ms`, 'info');
-                    startTimer(timerDuration, requestId);
+                    addLog(`⏳ isTimeUp=false，启动定时任务，${timerDuration}ms后执行二次请求`, 'info');
+                    addLog(`📊 计算公式: 2 * ${currentReadTime}ms + 2000ms = ${timerDuration}ms`, 'info');
+                    startTimer(timerDuration);
                 } else {
-                    addLog(`⚠️ [${requestId}] 无法启动定时任务 - isTimeUp: ${isTimeUp}, readtime: ${currentReadTime}`, 'warning');
+                    addLog(`⚠️ 无法启动定时任务 - isTimeUp: ${isTimeUp}, readtime: ${currentReadTime}`, 'warning');
                 }
             }
             
@@ -1305,7 +1345,7 @@
             }
             
             // 启动定时器
-            function startTimer(duration, requestId) {
+            function startTimer(duration) {
                 // 清除之前的定时器
                 if (currentTimer) {
                     clearTimeout(currentTimer);
@@ -1365,11 +1405,10 @@
             addLog('🚀 营销智能体模拟微信测试页面加载完成', 'info');
             addLog('📋 功能说明：', 'info');
             addLog('  - 根据isTimeUp判断是否启动定时任务', 'info');
-            addLog('  - 定时时长为2*readtime+2秒', 'info');
+            addLog('  - 定时时长为readtime+2秒', 'info');
             addLog('  - 从指定回复节点textOutput获取回复内容', 'info');
             addLog('  - 只发送当前消息，不包含历史消息', 'info');
             addLog('  - 用户新输入会中断当前定时任务', 'info');
-            addLog('  - 支持在AI回复过程中继续发送新消息（模拟微信）', 'info');
         });
     </script>
 </body>
