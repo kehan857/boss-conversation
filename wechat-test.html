@@ -278,18 +278,6 @@
             font-size: 14px;
         }
         
-        /* 输入框提示样式 */
-        .input-hint {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-            text-align: center;
-        }
-        
-        .input-hint.active {
-            color: var(--primary-color);
-        }
-        
         /* 状态指示器 */
         .status-indicator {
             padding: 8px 12px;
@@ -504,7 +492,6 @@
                             <input type="text" id="userInput" placeholder="输入消息..." />
                             <button id="sendButton">发送</button>
                         </div>
-                        <div class="input-hint" id="inputHint">💡 提示：可以在AI回复过程中继续发送新消息</div>
                     </div>
                 </div>
             </div>
@@ -633,14 +620,11 @@
             // 发送消息函数
             async function sendMessage() {
                 const message = userInput.value.trim();
-                if (!message) {
+                if (!message || isWaitingForResponse) {
+                    if (isWaitingForResponse) {
+                        addLog('⏳ 正在处理中，请稍候...', 'warning');
+                    }
                     return;
-                }
-                
-                // 如果当前正在等待响应，中断当前请求
-                if (isWaitingForResponse) {
-                    addLog('🛑 用户发送新消息，中断当前API请求', 'warning');
-                    // 这里可以添加中断当前请求的逻辑，但由于流式请求难以中断，我们允许并行处理
                 }
                 
                 // 中断当前定时任务
@@ -664,28 +648,22 @@
                 addLog(`📝 收到用户消息: "${message}"`, 'info');
                 addLog(`📊 当前消息历史数量: ${messageHistory.length}`, 'info');
                 
-                // 立即发送API请求，不检查isWaitingForResponse状态
+                // 发送API请求，传递当前消息
                 await processApiRequest(false, message); // false表示不是定时任务触发的
             }
             
             // 处理API请求
             async function processApiRequest(isTimerTriggered = false, currentMessage = null) {
-                // 为每个请求分配唯一ID
-                const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                const requestType = isTimerTriggered ? '定时任务' : '用户输入';
-                
-                addLog(`🚀 [${requestId}] 开始处理${requestType}请求`, 'info');
-                
-                // 如果当前有正在处理的请求，记录并行处理状态
                 if (isWaitingForResponse) {
-                    addLog(`⚡ [${requestId}] 并行处理：当前已有请求在处理中`, 'info');
+                    addLog('⚠️ 已有请求在处理中，跳过新请求', 'warning');
+                    return;
                 }
                 
-                // 标记正在处理（但不阻止新请求）
-                const wasWaiting = isWaitingForResponse;
                 isWaitingForResponse = true;
+                const requestType = isTimerTriggered ? '定时任务' : '用户输入';
                 
-                showStatus(`🤖 [${requestId}] 正在处理${requestType}请求...`, 'waiting');
+                showStatus(`🤖 正在处理${requestType}请求...`, 'waiting');
+                addLog(`🚀 开始处理${requestType}请求`, 'info');
                 
                 try {
                     const apiKey = apiKeyInput.value.trim();
@@ -700,20 +678,19 @@
                     if (isTimerTriggered) {
                         // 定时任务触发时，发送最后一条消息
                         requestContent = messageHistory[messageHistory.length - 1] || "继续对话";
-                        addLog(`🕐 [${requestId}] 定时任务使用消息: "${requestContent}"`, 'info');
+                        addLog(`🕐 定时任务使用消息: "${requestContent}"`, 'info');
                     } else {
                         // 用户输入时，发送当前消息
                         requestContent = currentMessage;
-                        addLog(`💬 [${requestId}] 用户输入消息: "${requestContent}"`, 'info');
+                        addLog(`💬 用户输入消息: "${requestContent}"`, 'info');
                     }
                     
                     const requestBody = {
-                        chatId: chatSessionId + '_' + requestId, // 每个请求使用独立的chatId
+                        chatId: chatSessionId,
                         stream: true,  // 启用FastGPT流式输出
                         detail: true,
                         variables: {
-                            isTimerTriggered: isTimerTriggered,
-                            requestId: requestId
+                            isTimerTriggered: isTimerTriggered
                         },
                         messages: [{
                             role: "user",
@@ -721,10 +698,10 @@
                         }]
                     };
                     
-                    addLog(`🌐 [${requestId}] 发送FastGPT流式请求到: ${apiUrl}`, 'info');
+                    addLog(`🌐 发送FastGPT流式请求到: ${apiUrl}`, 'info');
                     
                     // 记录请求报文
-                    displayRequestMessage(requestBody, `${apiUrl}/v1/chat/completions`, requestId);
+                    displayRequestMessage(requestBody, `${apiUrl}/v1/chat/completions`);
                     
                     // 发送流式请求
                     const response = await fetch(`${apiUrl}/v1/chat/completions`, {
@@ -739,30 +716,24 @@
                     if (!response.ok) {
                         const errorText = await response.text();
                         // 记录错误响应
-                        displayResponseMessage({ error: errorText, status: response.status }, false, requestId);
+                        displayResponseMessage({ error: errorText, status: response.status }, false);
                         throw new Error(`API请求失败(${response.status}): ${errorText}`);
                     }
                     
                     // 处理FastGPT流式响应
-                    await handleFastGPTStreamResponse(response, isTimerTriggered, requestId);
-                    
-                    addLog(`✅ [${requestId}] ${requestType}请求处理完成`, 'success');
+                    await handleFastGPTStreamResponse(response, isTimerTriggered);
                     
                 } catch (error) {
-                    addLog(`❌ [${requestId}] API请求错误: ${error.message}`, 'error');
+                    addLog(`❌ API请求错误: ${error.message}`, 'error');
                     addMessage('AI', '抱歉，服务暂时不可用，请稍后再试。');
                 } finally {
-                    // 只有在没有其他请求等待时才重置状态
-                    if (!wasWaiting) {
-                        isWaitingForResponse = false;
-                        hideStatus();
-                    }
-                    addLog(`🏁 [${requestId}] 请求处理结束，等待状态: ${isWaitingForResponse}`, 'info');
+                    isWaitingForResponse = false;
+                    hideStatus();
                 }
             }
             
             // 处理FastGPT流式响应
-            async function handleFastGPTStreamResponse(response, isTimerTriggered, requestId) {
+            async function handleFastGPTStreamResponse(response, isTimerTriggered) {
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
@@ -771,14 +742,14 @@
                 let processedContents = new Set(); // 防止重复处理相同内容
                 let completeResponseData = null; // 保存最后的完整响应数据
                 
-                addLog(`🔄 [${requestId}] 开始监控FastGPT流式数据流...`, 'info');
+                addLog(`🔄 开始监控FastGPT流式数据流...`, 'info');
                 
                 try {
                     while (true) {
                         const { done, value } = await reader.read();
                         
                         if (done) {
-                            addLog(`✅ [${requestId}] FastGPT流式数据流结束，共显示${replyCount}条回复`, 'success');
+                            addLog(`✅ FastGPT流式数据流结束，共显示${replyCount}条回复`, 'success');
                             break;
                         }
                         
@@ -792,15 +763,15 @@
                         
                         for (const line of lines) {
                             if (line.trim()) {
-                                const result = await processFastGPTStreamLine(line.trim(), processedNodeIds, processedContents, hasFoundStreamContent, requestId);
+                                const result = await processFastGPTStreamLine(line.trim(), processedNodeIds, processedContents, hasFoundStreamContent);
                                 if (result.newReplies.length > 0) {
                                     replyCount += result.newReplies.length;
-                                    addLog(`🎯 [${requestId}] FastGPT流中发现${result.newReplies.length}条新回复，累计${replyCount}条`, 'success');
+                                    addLog(`🎯 FastGPT流中发现${result.newReplies.length}条新回复，累计${replyCount}条`, 'success');
                                 }
                                 // 更新全局流式内容标记
                                 if (result.hasStreamContent) {
                                     hasFoundStreamContent = true;
-                                    addLog(`🔒 [${requestId}] 检测到流式内容，后续将跳过传统节点搜索`, 'info');
+                                    addLog(`🔒 检测到流式内容，后续将跳过传统节点搜索`, 'info');
                                 }
                                 
                                 // 保存最后的有效数据作为完整响应
@@ -814,7 +785,7 @@
                     
                     // 处理缓冲区中剩余的数据
                     if (buffer.trim()) {
-                        const result = await processFastGPTStreamLine(buffer.trim(), processedNodeIds, processedContents, hasFoundStreamContent, requestId);
+                        const result = await processFastGPTStreamLine(buffer.trim(), processedNodeIds, processedContents, hasFoundStreamContent);
                         if (result.newReplies.length > 0) {
                             replyCount += result.newReplies.length;
                         }
@@ -830,29 +801,29 @@
                     
                     // 记录最终响应数据
                     if (completeResponseData) {
-                        displayResponseMessage(completeResponseData, true, requestId);
+                        displayResponseMessage(completeResponseData, true);
                     }
                     
                     // 记录最终统计
-                    addLog(`📊 [${requestId}] 流式处理总结: 流式内容=${hasFoundStreamContent}, 总回复数=${replyCount}`, 'success');
+                    addLog(`📊 流式处理总结: 流式内容=${hasFoundStreamContent}, 总回复数=${replyCount}`, 'success');
                     
                     // 处理定时任务逻辑
                     if (!isTimerTriggered && completeResponseData) {
-                        addLog(`🔍 [${requestId}] FastGPT流式处理完成，开始提取定时变量并处理定时任务`, 'info');
+                        addLog(`🔍 FastGPT流式处理完成，开始提取定时变量并处理定时任务`, 'info');
                         await extractTimingVariables(completeResponseData);
                         await handleTimerLogic();
                     }
                     
                 } catch (error) {
-                    addLog(`❌ [${requestId}] FastGPT流式响应处理错误: ${error.message}`, 'error');
+                    addLog(`❌ FastGPT流式响应处理错误: ${error.message}`, 'error');
                 } finally {
                     reader.releaseLock();
                 }
             }
             
             // 处理FastGPT流式数据行
-            async function processFastGPTStreamLine(line, processedNodeIds, processedContents, hasFoundStreamContent, requestId) {
-                addLog(`📡 [${requestId}] 收到FastGPT数据: ${line.substring(0, 150)}${line.length > 150 ? '...' : ''}`, 'info');
+            async function processFastGPTStreamLine(line, processedNodeIds, processedContents, hasFoundStreamContent) {
+                addLog(`📡 收到FastGPT数据: ${line.substring(0, 150)}${line.length > 150 ? '...' : ''}`, 'info');
                 
                 const foundReplies = [];
                 let hasStreamContent = false;
@@ -866,13 +837,13 @@
                     
                     // 跳过event行和控制消息
                     if (line.startsWith('event:') || jsonData === '[DONE]' || jsonData === '' || jsonData === 'ping') {
-                        addLog(`📋 [${requestId}] 收到控制消息: ${line.startsWith('event:') ? line : jsonData || 'empty'}`, 'info');
+                        addLog(`📋 收到控制消息: ${line.startsWith('event:') ? line : jsonData || 'empty'}`, 'info');
                         return { newReplies: foundReplies, hasStreamContent: false };
                     }
                     
                     // 解析JSON数据
                     const data = JSON.parse(jsonData);
-                    addLog(`✅ [${requestId}] FastGPT数据解析成功`, 'info');
+                    addLog(`✅ FastGPT数据解析成功`, 'info');
                     
                     // 检查是否有choices数组和delta内容
                     if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
@@ -885,7 +856,7 @@
                                 // 检查内容是否已经处理过
                                 const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
                                 if (processedContents.has(contentHash)) {
-                                    addLog(`⚠️ [${requestId}] 检测到重复的流式内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
+                                    addLog(`⚠️ 检测到重复的流式内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
                                     return { newReplies: foundReplies, hasStreamContent: true };
                                 }
                                 
@@ -896,15 +867,15 @@
                                 const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
                                 const foundTimeISO = new Date().toISOString();
                                 
-                                addLog(`🎯 [${requestId}] [${foundTimeDisplay}] 发现FastGPT流式回复内容`, 'success');
-                                addLog(`⏰ [${requestId}] 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
-                                addLog(`📝 [${requestId}] 回复内容: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`, 'info');
-                                addLog(`🔢 [${requestId}] 选择索引: ${choice.index || 0}`, 'info');
+                                addLog(`🎯 [${foundTimeDisplay}] 发现FastGPT流式回复内容`, 'success');
+                                addLog(`⏰ 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
+                                addLog(`📝 回复内容: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`, 'info');
+                                addLog(`🔢 选择索引: ${choice.index || 0}`, 'info');
                                 
                                 // 记录处理开始时间
                                 const processStartTime = Date.now();
                                 const processStartDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
-                                addLog(`⚙️ [${requestId}] [${processStartDisplay}] 开始处理FastGPT流式回复`, 'info');
+                                addLog(`⚙️ [${processStartDisplay}] 开始处理FastGPT流式回复`, 'info');
                                 
                                 // 立即显示回复
                                 addMessage('AI', content);
@@ -915,10 +886,10 @@
                                 const processingDuration = displayTime - processStartTime;
                                 const totalDuration = displayTime - foundTime;
                                 
-                                addLog(`✅ [${requestId}] [${displayTimeDisplay}] FastGPT流式回复显示完成`, 'success');
-                                addLog(`⏱️ [${requestId}] 处理耗时: ${processingDuration}ms`, 'info');
-                                addLog(`⏱️ [${requestId}] 总耗时(发现→显示): ${totalDuration}ms`, 'info');
-                                addLog(`📊 [${requestId}] FastGPT流式回复监控 - 发现:${foundTimeDisplay} 显示:${displayTimeDisplay} 耗时:${totalDuration}ms`, 'success');
+                                addLog(`✅ [${displayTimeDisplay}] FastGPT流式回复显示完成`, 'success');
+                                addLog(`⏱️ 处理耗时: ${processingDuration}ms`, 'info');
+                                addLog(`⏱️ 总耗时(发现→显示): ${totalDuration}ms`, 'info');
+                                addLog(`📊 FastGPT流式回复监控 - 发现:${foundTimeDisplay} 显示:${displayTimeDisplay} 耗时:${totalDuration}ms`, 'success');
                                 
                                 foundReplies.push({
                                     content: content,
@@ -935,17 +906,17 @@
                     
                     // 只有在没有流式内容且全局也没有发现过流式内容时才搜索传统的指定回复节点
                     if (!hasStreamContent && !hasFoundStreamContent) {
-                        addLog(`🔄 [${requestId}] 未检测到流式内容且全局无流式内容，搜索传统指定回复节点`, 'info');
+                        addLog(`🔄 未检测到流式内容且全局无流式内容，搜索传统指定回复节点`, 'info');
                         const traditionalReplies = await searchRepliesInStreamData(data, processedNodeIds, processedContents);
                         foundReplies.push(...traditionalReplies);
                     } else if (hasStreamContent) {
-                        addLog(`✅ [${requestId}] 已处理流式内容，跳过传统节点搜索避免重复`, 'info');
+                        addLog(`✅ 已处理流式内容，跳过传统节点搜索避免重复`, 'info');
                     } else if (hasFoundStreamContent) {
-                        addLog(`🔒 [${requestId}] 全局已发现流式内容，跳过传统节点搜索避免重复`, 'info');
+                        addLog(`🔒 全局已发现流式内容，跳过传统节点搜索避免重复`, 'info');
                     }
                     
                 } catch (error) {
-                    addLog(`⚠️ [${requestId}] FastGPT数据解析失败: ${error.message}`, 'warning');
+                    addLog(`⚠️ FastGPT数据解析失败: ${error.message}`, 'warning');
                 }
                 
                 return { newReplies: foundReplies, hasStreamContent: hasStreamContent };
@@ -1005,7 +976,7 @@
                                     // 检查内容是否已经处理过
                                     const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
                                     if (processedContents.has(contentHash)) {
-                                        addLog(`⚠️ [${requestId}] 检测到重复的节点内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
+                                        addLog(`⚠️ 检测到重复的节点内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
                                         return; // 跳过重复内容
                                     }
                                     
@@ -1016,16 +987,16 @@
                                     const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
                                     const foundTimeISO = new Date().toISOString();
                                     
-                                    addLog(`🎯 [${requestId}] [${foundTimeDisplay}] 发现有效回复信息`, 'success');
-                                    addLog(`⏰ [${requestId}] 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
-                                    addLog(`📍 [${requestId}] 节点位置: ${path}`, 'info');
-                                    addLog(`🆔 [${requestId}] 节点ID: ${nodeId}`, 'info');
-                                    addLog(`📝 [${requestId}] 回复内容: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`, 'info');
+                                    addLog(`🎯 [${foundTimeDisplay}] 发现有效回复信息`, 'success');
+                                    addLog(`⏰ 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
+                                    addLog(`📍 节点位置: ${path}`, 'info');
+                                    addLog(`🆔 节点ID: ${nodeId}`, 'info');
+                                    addLog(`📝 回复内容: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`, 'info');
                                     
                                     // 记录处理开始时间
                                     const processStartTime = Date.now();
                                     const processStartDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
-                                    addLog(`⚙️ [${requestId}] [${processStartDisplay}] 开始处理有效回复信息`, 'info');
+                                    addLog(`⚙️ [${processStartDisplay}] 开始处理有效回复信息`, 'info');
                                     
                                     // 立即显示回复
                                     addMessage('AI', content);
@@ -1036,10 +1007,10 @@
                                     const processingDuration = displayTime - processStartTime;
                                     const totalDuration = displayTime - foundTime;
                                     
-                                    addLog(`✅ [${requestId}] [${displayTimeDisplay}] 有效回复信息显示完成`, 'success');
-                                    addLog(`⏱️ [${requestId}] 处理耗时: ${processingDuration}ms`, 'info');
-                                    addLog(`⏱️ [${requestId}] 总耗时(发现→显示): ${totalDuration}ms`, 'info');
-                                    addLog(`📊 [${requestId}] 回复信息监控 - 发现:${foundTimeDisplay} 显示:${displayTimeDisplay} 耗时:${totalDuration}ms`, 'success');
+                                    addLog(`✅ [${displayTimeDisplay}] 有效回复信息显示完成`, 'success');
+                                    addLog(`⏱️ 处理耗时: ${processingDuration}ms`, 'info');
+                                    addLog(`⏱️ 总耗时(发现→显示): ${totalDuration}ms`, 'info');
+                                    addLog(`📊 回复信息监控 - 发现:${foundTimeDisplay} 显示:${displayTimeDisplay} 耗时:${totalDuration}ms`, 'success');
                                     
                                     foundReplies.push({
                                         content: content,
@@ -1055,7 +1026,7 @@
                             } else {
                                 // 重复节点的时间记录
                                 const duplicateTime = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
-                                addLog(`⚠️ [${requestId}] [${duplicateTime}] 检测到重复的回复节点，已跳过: ${nodeId}`, 'warning');
+                                addLog(`⚠️ [${duplicateTime}] 检测到重复的回复节点，已跳过: ${nodeId}`, 'warning');
                             }
                         }
                         
@@ -1077,9 +1048,9 @@
                 
                 // 如果找到了有效回复，输出汇总信息
                 if (foundReplies.length > 0) {
-                    addLog(`📈 [${requestId}] 有效回复信息监控汇总:`, 'success');
+                    addLog(`📈 有效回复信息监控汇总:`, 'success');
                     foundReplies.forEach((reply, index) => {
-                        addLog(`  [${requestId}] ${index + 1}. [${reply.foundTime}→${reply.displayTime}] 耗时${reply.totalDuration}ms 节点:${reply.nodeId}`, 'success');
+                        addLog(`  ${index + 1}. [${reply.foundTime}→${reply.displayTime}] 耗时${reply.totalDuration}ms 节点:${reply.nodeId}`, 'success');
                     });
                 }
                 
@@ -1109,11 +1080,11 @@
                             if (obj.pluginOutput) {
                                 if (obj.pluginOutput.readtime !== undefined) {
                                     currentReadTime = parseInt(obj.pluginOutput.readtime);
-                                    addLog(`📖 [${requestId}] 获取readtime: ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                                    addLog(`📖 获取readtime: ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
                                 }
                                 if (obj.pluginOutput.isTimeUp !== undefined) {
                                     isTimeUp = obj.pluginOutput.isTimeUp;
-                                    addLog(`⏰ [${requestId}] 获取isTimeUp: ${isTimeUp}`, 'success');
+                                    addLog(`⏰ 获取isTimeUp: ${isTimeUp}`, 'success');
                                 }
                             }
                             
@@ -1121,12 +1092,12 @@
                             if (obj.customOutputs) {
                                 if (!currentReadTime && obj.customOutputs.readtime) {
                                     currentReadTime = parseInt(obj.customOutputs.readtime);
-                                    addLog(`📖 [${requestId}] 从customOutputs获取readtime: ${currentReadTime}ms`, 'info');
+                                    addLog(`📖 从customOutputs获取readtime: ${currentReadTime}ms`, 'info');
                                 }
                                 
                                 if (isTimeUp === null && obj.customOutputs.isTimeUp !== undefined) {
                                     isTimeUp = obj.customOutputs.isTimeUp;
-                                    addLog(`⏰ [${requestId}] 从customOutputs获取isTimeUp: ${isTimeUp}`, 'info');
+                                    addLog(`⏰ 从customOutputs获取isTimeUp: ${isTimeUp}`, 'info');
                                 }
                             }
                         }
@@ -1139,7 +1110,7 @@
                 searchTimingRecursive(responseData);
                 
                 // 记录最终结果
-                addLog(`🎯 [${requestId}] 最终变量 - readtime: ${currentReadTime}ms, isTimeUp: ${isTimeUp}`, 'success');
+                addLog(`🎯 最终变量 - readtime: ${currentReadTime}ms, isTimeUp: ${isTimeUp}`, 'success');
             }
             
             // 处理定时任务逻辑
@@ -1304,7 +1275,7 @@
                 addLog('🧹 报文信息已清空', 'info');
             }
             
-            function displayRequestMessage(requestData, url, requestId) {
+            function displayRequestMessage(requestData, url) {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
                 
@@ -1326,7 +1297,7 @@
                 requestBody.textContent = JSON.stringify(formattedRequest, null, 2);
             }
             
-            function displayResponseMessage(responseData, isSuccess, requestId) {
+            function displayResponseMessage(responseData, isSuccess) {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
                 
