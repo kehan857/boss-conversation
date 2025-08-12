@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>营销智能体模拟微信测试页面</title>
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #f5222d;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+            --border-color: #e8e8e8;
+            --wechat-green: #95EC69;
+            --wechat-bg: #ededed;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: var(--light-bg);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .navigation {
+            background-color: #096dd9;
+            padding: 10px 20px;
+            text-align: center;
+            border-bottom: 1px solid #0050b3;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        main {
+            padding: 20px;
+        }
+        
+        .panel {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 12px 15px;
+            background-color: #f0f0f0;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-body {
+            padding: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #40a9ff;
+        }
+        
+        button:disabled {
+            background-color: #d9d9d9;
+            cursor: not-allowed;
+        }
+        
+        /* 微信风格聊天界面 */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            background-color: var(--wechat-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .message {
+            margin-bottom: 0;
+            padding: 0;
+            display: flex;
+            align-items: flex-start;
+            max-width: 85%;
+        }
+        
+        .message-user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-ai {
+            align-self: flex-start;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background-color: #ddd;
+            margin: 0 8px;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .message-user .avatar {
+            background-image: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .message-content {
+            background-color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            position: relative;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+            unicode-bidi: isolate;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.4;
+            font-size: 14px;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            min-width: 40px;
+            width: fit-content;
+            display: inline-block;
+        }
+        
+        .message-user .message-content {
+            background-color: var(--wechat-green);
+            color: #333;
+        }
+        
+        /* 消息气泡尖角 */
+        .message-content::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            width: 0;
+            height: 0;
+            border: 6px solid transparent;
+        }
+        
+        .message-ai .message-content::before {
+            left: -12px;
+            border-right-color: white;
+        }
+        
+        .message-user .message-content::before {
+            right: -12px;
+            border-left-color: var(--wechat-green);
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+            align-items: center;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            margin-right: 10px;
+            border-radius: 20px;
+            border: 1px solid #d0d0d0;
+            padding: 8px 16px;
+            background-color: white;
+            outline: none;
+        }
+        
+        .chat-input input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+        }
+        
+        .chat-input button {
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+        
+        /* 状态指示器 */
+        .status-indicator {
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .status-waiting {
+            background-color: #e6f7ff;
+            color: var(--primary-color);
+            border: 1px solid #91d5ff;
+        }
+        
+        .status-timer {
+            background-color: #fff7e6;
+            color: var(--warning-color);
+            border: 1px solid #ffd591;
+        }
+        
+        /* 日志样式 */
+        .log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+        
+        .log-time {
+            color: #888;
+        }
+        
+        .log-info {
+            color: var(--primary-color);
+        }
+        
+        .log-warning {
+            color: var(--warning-color);
+        }
+        
+        .log-error {
+            color: var(--error-color);
+        }
+        
+        .log-success {
+            color: var(--success-color);
+        }
+        
+        /* 定时器显示 */
+        .timer-display {
+            background-color: #fff2e8;
+            border: 1px solid #ffbb96;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #d4380d;
+            display: none;
+        }
+        
+        /* 报文信息样式 */
+        .message-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            color: #666;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary-color);
+            background-color: #f0f8ff;
+        }
+        
+        .message-wrapper {
+            position: relative;
+            min-height: 200px;
+        }
+        
+        .message-panel {
+            display: none;
+        }
+        
+        .message-panel.active {
+            display: block;
+        }
+        
+        .message-info {
+            height: 100%;
+        }
+        
+        .message-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .message-time {
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+        }
+        
+        .message-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: white;
+        }
+        
+        .message-status.success {
+            background-color: var(--success-color);
+        }
+        
+        .message-status.error {
+            background-color: var(--error-color);
+        }
+        
+        .message-status.pending {
+            background-color: var(--warning-color);
+        }
+        
+        .message-body {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        
+        .message-body pre {
+            padding: 15px;
+            margin: 0;
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>营销智能体模拟微信测试页面</h1>
+            <div class="subtitle">FastGPT接口调用 + 定时任务 + 多段回复</div>
+        </header>
+        
+        <div class="navigation">
+            <a href="index.html" class="nav-link">📊 多消息汇总测试</a>
+            <a href="wechat-test.html" class="nav-link">💬 微信模拟测试</a>
+        </div>
+        
+        <main>
+            <div class="panel">
+                <div class="panel-header">
+                    <span>API配置</span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label for="apiKey">API密钥</label>
+                        <input type="text" id="apiKey" value="fastgpt-yKhK011KhQZpBKk3xXSmJf6GIPrGKvGKkHfVCrYd6o9nhqSfbiLby640gn8Jot" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="apiUrl">API地址</label>
+                        <input type="text" id="apiUrl" value="https://api.fastgpt.in/api" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <span>微信模拟聊天</span>
+                    <button id="clearChatBtn">清空聊天</button>
+                </div>
+                <div class="panel-body">
+                    <div class="timer-display" id="timerDisplay"></div>
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    
+                    <div class="chat-container">
+                        <div id="chatMessages" class="chat-messages">
+                        </div>
+                        <div class="chat-input" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                            <button id="uploadBtn" type="button" style="border-radius: 20px; padding: 8px 20px; border: 1px solid #1890ff; background: #fff; color: #1890ff; cursor: pointer;">上传图片</button>
+                            <input type="text" id="userInput" placeholder="输入消息..." style="flex:1; margin-right: 10px; border-radius: 20px; border: 1px solid #d0d0d0; padding: 8px 16px; background-color: white; outline: none;">
+                            <button id="sendButton">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <span>系统日志</span>
+                    <button id="clearLogsBtn">清空日志</button>
+                </div>
+                <div class="panel-body">
+                    <div id="logContainer" class="log-container"></div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <span>报文信息</span>
+                    <button id="clearMessagesBtn">清空报文</button>
+                </div>
+                <div class="panel-body">
+                    <div class="message-tabs">
+                        <button class="tab-btn active" id="requestTab">请求报文</button>
+                        <button class="tab-btn" id="responseTab">响应报文</button>
+                    </div>
+                    
+                    <div class="message-wrapper">
+                        <div id="requestMessage" class="message-panel active">
+                            <div class="message-info">
+                                <div class="message-meta">
+                                    <span class="message-time" id="requestTime">暂无请求</span>
+                                    <span class="message-status" id="requestStatus"></span>
+                                </div>
+                                <div class="message-body">
+                                    <pre id="requestBody">暂无请求数据</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="responseMessage" class="message-panel">
+                            <div class="message-info">
+                                <div class="message-meta">
+                                    <span class="message-time" id="responseTime">暂无响应</span>
+                                    <span class="message-status" id="responseStatus"></span>
+                                </div>
+                                <div class="message-body">
+                                    <pre id="responseBody">暂无响应数据</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM元素
+            const apiKeyInput = document.getElementById('apiKey');
+            const apiUrlInput = document.getElementById('apiUrl');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const chatMessages = document.getElementById('chatMessages');
+            const clearChatBtn = document.getElementById('clearChatBtn');
+            const clearLogsBtn = document.getElementById('clearLogsBtn');
+            const logContainer = document.getElementById('logContainer');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const timerDisplay = document.getElementById('timerDisplay');
+            
+            // 报文信息相关DOM元素
+            const clearMessagesBtn = document.getElementById('clearMessagesBtn');
+            const requestTab = document.getElementById('requestTab');
+            const responseTab = document.getElementById('responseTab');
+            const requestMessage = document.getElementById('requestMessage');
+            const responseMessage = document.getElementById('responseMessage');
+            const requestTime = document.getElementById('requestTime');
+            const requestStatus = document.getElementById('requestStatus');
+            const requestBody = document.getElementById('requestBody');
+            const responseTime = document.getElementById('responseTime');
+            const responseStatus = document.getElementById('responseStatus');
+            const responseBody = document.getElementById('responseBody');
+            
+            // 全局变量
+            let messageHistory = [];
+            let isWaitingForResponse = false;
+            let currentTimer = null;
+            let currentReadTime = null;
+            let isTimeUp = null;
+            let chatSessionId = 'session_' + Date.now();
+            let timerInterval = null;
+            let timerStartTime = null;
+            let hasFoundStreamContent = false; // 全局标记是否已经找到流式内容
+            let picture = '';
+            
+            // 事件监听器
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            sendButton.addEventListener('click', sendMessage);
+            
+            clearChatBtn.addEventListener('click', function() {
+                clearChat();
+            });
+            
+            clearLogsBtn.addEventListener('click', function() {
+                logContainer.innerHTML = '';
+                addLog('🧹 日志已清空', 'info');
+            });
+            
+            // 报文信息事件监听器
+            clearMessagesBtn.addEventListener('click', function() {
+                clearMessages();
+            });
+            
+            requestTab.addEventListener('click', function() {
+                switchTab('request');
+            });
+            
+            responseTab.addEventListener('click', function() {
+                switchTab('response');
+            });
+            
+            // 发送消息函数
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message || isWaitingForResponse) {
+                    if (isWaitingForResponse) {
+                        addLog('⏳ 正在处理中，请稍候...', 'warning');
+                    }
+                    return;
+                }
+                
+                // 中断当前定时任务
+                if (currentTimer) {
+                    clearTimeout(currentTimer);
+                    currentTimer = null;
+                    addLog('🛑 用户新输入，中断当前定时任务', 'warning');
+                    hideTimer();
+                }
+                
+                // 清空输入框
+                userInput.value = '';
+                
+                // 显示用户消息
+                addMessage('用户', message);
+                
+                // 添加到历史记录
+                messageHistory.push(message);
+                
+                // 记录状态
+                addLog(`📝 收到用户消息: "${message}"`, 'info');
+                addLog(`📊 当前消息历史数量: ${messageHistory.length}`, 'info');
+                
+                // 发送API请求，传递当前消息
+                await processApiRequest(false, message); // false表示不是定时任务触发的
+            }
+            
+            // 处理API请求
+            async function processApiRequest(isTimerTriggered = false, currentMessage = null) {
+                if (isWaitingForResponse) {
+                    addLog('⚠️ 已有请求在处理中，跳过新请求', 'warning');
+                    return;
+                }
+                
+                isWaitingForResponse = true;
+                const requestType = isTimerTriggered ? '定时任务' : '用户输入';
+                
+                showStatus(`🤖 正在处理${requestType}请求...`, 'waiting');
+                addLog(`🚀 开始处理${requestType}请求`, 'info');
+                
+                try {
+                    const apiKey = apiKeyInput.value.trim();
+                    const apiUrl = apiUrlInput.value.trim();
+                    
+                    if (!apiKey || !apiUrl) {
+                        throw new Error('API密钥或地址不能为空');
+                    }
+                    
+                    // 构建请求体 - 只发送当前消息
+                    let requestContent;
+                    if (isTimerTriggered) {
+                        // 定时任务触发时，发送最后一条消息
+                        requestContent = messageHistory[messageHistory.length - 1] || "继续对话";
+                        addLog(`🕐 定时任务使用消息: "${requestContent}"`, 'info');
+                    } else {
+                        // 用户输入时，发送当前消息
+                        requestContent = currentMessage;
+                        addLog(`💬 用户输入消息: "${requestContent}"`, 'info');
+                    }
+                    
+                    const requestBody = {
+                        chatId: chatSessionId,
+                        stream: true,  // 启用FastGPT流式输出
+                        detail: true,
+                        variables: {
+                            isTimerTriggered: isTimerTriggered,
+                            picture: picture // 添加图片URL到variables中
+                        },
+                        messages: [{
+                            role: "user",
+                            content: requestContent
+                        }]
+                    };
+                    
+                    addLog(`🌐 发送FastGPT流式请求到: ${apiUrl}`, 'info');
+                    
+                    // 记录请求报文
+                    displayRequestMessage(requestBody, `${apiUrl}/v1/chat/completions`);
+                    
+                    // 发送流式请求
+                    const response = await fetch(`${apiUrl}/v1/chat/completions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        // 记录错误响应
+                        displayResponseMessage({ error: errorText, status: response.status }, false);
+                        throw new Error(`API请求失败(${response.status}): ${errorText}`);
+                    }
+                    
+                    // 处理FastGPT流式响应
+                    await handleFastGPTStreamResponse(response, isTimerTriggered);
+                    
+                } catch (error) {
+                    addLog(`❌ API请求错误: ${error.message}`, 'error');
+                    addMessage('AI', '抱歉，服务暂时不可用，请稍后再试。');
+                } finally {
+                    isWaitingForResponse = false;
+                    hideStatus();
+                }
+            }
+            
+            // 处理FastGPT流式响应
+            async function handleFastGPTStreamResponse(response, isTimerTriggered) {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let replyCount = 0;
+                let processedNodeIds = new Set(); // 防止重复处理同一个节点
+                let processedContents = new Set(); // 防止重复处理相同内容
+                let completeResponseData = null; // 保存最后的完整响应数据
+                
+                // 添加流式内容累积变量
+                let streamAccumulator = '';
+                let currentStreamMessageElement = null;
+                
+                addLog(`🔄 开始监控FastGPT流式数据流...`, 'info');
+                
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        
+                        if (done) {
+                            addLog(`✅ FastGPT流式数据流结束，共显示${replyCount}条回复`, 'success');
+                            break;
+                        }
+                        
+                        // 解码数据块
+                        const chunk = decoder.decode(value, { stream: true });
+                        buffer += chunk;
+                        
+                        // 处理完整的SSE数据行
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || ''; // 保留最后一个可能不完整的行
+                        
+                        for (const line of lines) {
+                            if (line.trim()) {
+                                const result = await processFastGPTStreamLine(line.trim(), processedNodeIds, processedContents, hasFoundStreamContent);
+                                if (result.newReplies.length > 0) {
+                                    replyCount += result.newReplies.length;
+                                    addLog(`🎯 FastGPT流中发现${result.newReplies.length}条新回复，累计${replyCount}条`, 'success');
+                                }
+                                // 更新全局流式内容标记
+                                if (result.hasStreamContent) {
+                                    hasFoundStreamContent = true;
+                                    addLog(`🔒 检测到流式内容，后续将跳过传统节点搜索`, 'info');
+                                }
+                                
+                                // 保存最后的有效数据作为完整响应
+                                const parsedData = tryParseStreamLine(line.trim());
+                                if (parsedData && typeof parsedData === 'object') {
+                                    completeResponseData = parsedData;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 处理缓冲区中剩余的数据
+                    if (buffer.trim()) {
+                        const result = await processFastGPTStreamLine(buffer.trim(), processedNodeIds, processedContents, hasFoundStreamContent);
+                        if (result.newReplies.length > 0) {
+                            replyCount += result.newReplies.length;
+                        }
+                        if (result.hasStreamContent) {
+                            hasFoundStreamContent = true;
+                        }
+                        
+                        const parsedData = tryParseStreamLine(buffer.trim());
+                        if (parsedData && typeof parsedData === 'object') {
+                            completeResponseData = parsedData;
+                        }
+                    }
+                    
+                    // 记录最终响应数据
+                    if (completeResponseData) {
+                        displayResponseMessage(completeResponseData, true);
+                    }
+                    
+                    // 流式处理完成后的清理工作
+                    if (streamAccumulator && currentStreamMessageElement) {
+                        addLog(`✅ 流式回复完成，总字符数: ${streamAccumulator.length}`, 'success');
+                        // 最终确认内容显示
+                        updateStreamMessageContent(currentStreamMessageElement, streamAccumulator);
+                        
+                        // 重置流式变量
+                        streamAccumulator = '';
+                        currentStreamMessageElement = null;
+                    }
+                    
+                    // 记录最终统计
+                    addLog(`📊 流式处理总结: 流式内容=${hasFoundStreamContent}, 总回复数=${replyCount}`, 'success');
+                    
+                    // 处理定时任务逻辑
+                    if (!isTimerTriggered && completeResponseData) {
+                        addLog(`🔍 FastGPT流式处理完成，开始提取定时变量并处理定时任务`, 'info');
+                        await extractTimingVariables(completeResponseData);
+                        await handleTimerLogic();
+                    }
+                    
+                } catch (error) {
+                    addLog(`❌ FastGPT流式响应处理错误: ${error.message}`, 'error');
+                } finally {
+                    reader.releaseLock();
+                }
+            }
+            
+            // 创建流式消息元素
+            function createStreamMessageElement() {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message message-ai';
+                messageElement.innerHTML = `
+                    <div class="avatar">AI</div>
+                    <div class="message-content"></div>
+                `;
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                return messageElement;
+            }
+            
+            // 更新流式消息内容
+            function updateStreamMessageContent(messageElement, content) {
+                const messageContent = messageElement.querySelector('.message-content');
+                const processedText = processEmojiAndText(content);
+                
+                // 使用requestAnimationFrame优化更新频率
+                if (!messageElement.updatePending) {
+                    messageElement.updatePending = true;
+                    requestAnimationFrame(() => {
+                        messageContent.innerHTML = processedText;
+                        messageElement.updatePending = false;
+                        
+                        // 确保滚动到底部
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    });
+                }
+            }
+            
+            // 处理FastGPT流式数据行
+            async function processFastGPTStreamLine(line, processedNodeIds, processedContents, hasFoundStreamContent) {
+                addLog(`📡 收到FastGPT数据: ${line.substring(0, 150)}${line.length > 150 ? '...' : ''}`, 'info');
+                
+                const foundReplies = [];
+                let hasStreamContent = false;
+                
+                try {
+                    // 处理Server-Sent Events格式
+                    let jsonData = line;
+                    if (line.startsWith('data: ')) {
+                        jsonData = line.substring(6).trim();
+                    }
+                    
+                    // 跳过event行和控制消息
+                    if (line.startsWith('event:') || jsonData === '[DONE]' || jsonData === '' || jsonData === 'ping') {
+                        addLog(`📋 收到控制消息: ${line.startsWith('event:') ? line : jsonData || 'empty'}`, 'info');
+                        return { newReplies: foundReplies, hasStreamContent: false };
+                    }
+                    
+                    // 解析JSON数据
+                    const data = JSON.parse(jsonData);
+                    addLog(`✅ FastGPT数据解析成功`, 'info');
+                    
+                    // 检查是否有choices数组和delta内容
+                    if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
+                        const choice = data.choices[0];
+                        if (choice.delta && choice.delta.content) {
+                            const content = choice.delta.content.trim();
+                            if (content) {
+                                hasStreamContent = true; // 标记发现了流式内容
+                                
+                                // 检查内容是否已经处理过
+                                const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
+                                if (processedContents.has(contentHash)) {
+                                    addLog(`⚠️ 检测到重复的流式内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
+                                    return { newReplies: foundReplies, hasStreamContent: true };
+                                }
+                                
+                                processedContents.add(contentHash); // 标记内容已处理
+                                
+                                // 记录发现有效回复的时间
+                                const foundTime = Date.now();
+                                const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                                const foundTimeISO = new Date().toISOString();
+                                
+                                addLog(`🎯 [${foundTimeDisplay}] 发现FastGPT流式回复内容`, 'success');
+                                addLog(`⏰ 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
+                                addLog(`📝 回复内容: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`, 'info');
+                                addLog(`🔢 选择索引: ${choice.index || 0}`, 'info');
+                                
+                                // 累积流式内容
+                                streamAccumulator += content;
+                                
+                                // 创建或更新消息元素
+                                if (!currentStreamMessageElement) {
+                                    currentStreamMessageElement = createStreamMessageElement();
+                                    addLog(`🎯 创建流式消息元素开始累积内容`, 'success');
+                                }
+                                
+                                // 实时更新消息内容
+                                updateStreamMessageContent(currentStreamMessageElement, streamAccumulator);
+                                
+                                // 记录累积状态
+                                addLog(`📝 累积流式内容: ${streamAccumulator.length}字符`, 'info');
+                                
+                                foundReplies.push({
+                                    content: content,
+                                    foundTime: foundTimeDisplay,
+                                    displayTime: displayTimeDisplay,
+                                    processingDuration: processingDuration,
+                                    totalDuration: totalDuration,
+                                    choiceIndex: choice.index || 0,
+                                    source: 'stream' // 标记来源为流式输出
+                                });
+                            }
+                        }
+                    }
+                    
+                    // 只有在没有流式内容且全局也没有发现过流式内容时才搜索传统的指定回复节点
+                    if (!hasStreamContent && !hasFoundStreamContent) {
+                        addLog(`🔄 未检测到流式内容且全局无流式内容，搜索传统指定回复节点`, 'info');
+                        const traditionalReplies = await searchRepliesInStreamData(data, processedNodeIds, processedContents);
+                        foundReplies.push(...traditionalReplies);
+                    } else if (hasStreamContent) {
+                        addLog(`✅ 已处理流式内容，跳过传统节点搜索避免重复`, 'info');
+                    } else if (hasFoundStreamContent) {
+                        addLog(`🔒 全局已发现流式内容，跳过传统节点搜索避免重复`, 'info');
+                    }
+                    
+                } catch (error) {
+                    addLog(`⚠️ FastGPT数据解析失败: ${error.message}`, 'warning');
+                }
+                
+                return { newReplies: foundReplies, hasStreamContent: hasStreamContent };
+            }
+            
+            // 尝试解析流式数据行（不显示错误）
+            function tryParseStreamLine(line) {
+                try {
+                    let jsonData = line;
+                    if (line.startsWith('data: ')) {
+                        jsonData = line.substring(6).trim();
+                    }
+                    
+                    if (jsonData === '[DONE]' || jsonData === '' || jsonData === 'ping') {
+                        return null;
+                    }
+                    
+                    return JSON.parse(jsonData);
+                } catch (error) {
+                    return null;
+                }
+            }
+            
+            // 在流式数据中搜索回复
+            async function searchRepliesInStreamData(data, processedNodeIds, processedContents) {
+                const foundReplies = [];
+                
+                if (!data || typeof data !== 'object') {
+                    return foundReplies;
+                }
+                
+                // 记录搜索开始时间
+                const searchStartTime = Date.now();
+                const searchStartDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                addLog(`🔍 [${searchStartDisplay}] 开始搜索流式数据中的有效回复信息`, 'info');
+                
+                // 递归搜索并立即显示指定回复
+                function searchAndDisplayRecursive(obj, path = '') {
+                    if (Array.isArray(obj)) {
+                        obj.forEach((item, index) => {
+                            searchAndDisplayRecursive(item, `${path}[${index}]`);
+                        });
+                        return;
+                    }
+                    
+                    if (obj && typeof obj === 'object') {
+                        // 检查是否是指定回复节点
+                        if (obj.moduleName && obj.moduleName.includes('指定回复') && obj.textOutput) {
+                            const nodeId = obj.id || `unknown_${Date.now()}_${Math.random()}`;
+                            
+                            // 检查是否已经处理过这个节点
+                            if (!processedNodeIds.has(nodeId)) {
+                                processedNodeIds.add(nodeId);
+                                
+                                const content = String(obj.textOutput).trim();
+                                if (content) {
+                                    // 检查内容是否已经处理过
+                                    const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
+                                    if (processedContents.has(contentHash)) {
+                                        addLog(`⚠️ 检测到重复的节点内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
+                                        return; // 跳过重复内容
+                                    }
+                                    
+                                    processedContents.add(contentHash); // 标记内容已处理
+                                    
+                                    // 记录发现有效回复的时间
+                                    const foundTime = Date.now();
+                                    const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                                    const foundTimeISO = new Date().toISOString();
+                                    
+                                    addLog(`🎯 [${foundTimeDisplay}] 发现有效回复信息`, 'success');
+                                    addLog(`⏰ 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
+                                    addLog(`📍 节点位置: ${path}`, 'info');
+                                    addLog(`🆔 节点ID: ${nodeId}`, 'info');
+                                    addLog(`📝 回复内容: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`, 'info');
+                                    
+                                    // 记录处理开始时间
+                                    const processStartTime = Date.now();
+                                    const processStartDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                                    addLog(`⚙️ [${processStartDisplay}] 开始处理有效回复信息`, 'info');
+                                    
+                                    // 立即显示回复
+                                    addMessage('AI', content);
+                                    
+                                    // 记录显示完成时间
+                                    const displayTime = Date.now();
+                                    const displayTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                                    const processingDuration = displayTime - processStartTime;
+                                    const totalDuration = displayTime - foundTime;
+                                    
+                                    addLog(`✅ [${displayTimeDisplay}] 有效回复信息显示完成`, 'success');
+                                    addLog(`⏱️ 处理耗时: ${processingDuration}ms`, 'info');
+                                    addLog(`⏱️ 总耗时(发现→显示): ${totalDuration}ms`, 'info');
+                                    addLog(`📊 回复信息监控 - 发现:${foundTimeDisplay} 显示:${displayTimeDisplay} 耗时:${totalDuration}ms`, 'success');
+                                    
+                                    foundReplies.push({
+                                        content: content,
+                                        nodeId: nodeId,
+                                        foundTime: foundTimeDisplay,
+                                        displayTime: displayTimeDisplay,
+                                        processingDuration: processingDuration,
+                                        totalDuration: totalDuration,
+                                        path: path,
+                                        source: 'traditional' // 标记来源为传统节点
+                                    });
+                                }
+                            } else {
+                                // 重复节点的时间记录
+                                const duplicateTime = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                                addLog(`⚠️ [${duplicateTime}] 检测到重复的回复节点，已跳过: ${nodeId}`, 'warning');
+                            }
+                        }
+                        
+                        // 递归搜索所有属性
+                        Object.entries(obj).forEach(([key, value]) => {
+                            searchAndDisplayRecursive(value, path ? `${path}.${key}` : key);
+                        });
+                    }
+                }
+                
+                searchAndDisplayRecursive(data);
+                
+                // 记录搜索完成时间
+                const searchEndTime = Date.now();
+                const searchEndDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                const searchDuration = searchEndTime - searchStartTime;
+                
+                addLog(`🔍 [${searchEndDisplay}] 流式数据搜索完成，用时${searchDuration}ms，发现${foundReplies.length}个有效回复`, foundReplies.length > 0 ? 'success' : 'info');
+                
+                // 如果找到了有效回复，输出汇总信息
+                if (foundReplies.length > 0) {
+                    addLog(`📈 有效回复信息监控汇总:`, 'success');
+                    foundReplies.forEach((reply, index) => {
+                        addLog(`  ${index + 1}. [${reply.foundTime}→${reply.displayTime}] 耗时${reply.totalDuration}ms 节点:${reply.nodeId}`, 'success');
+                    });
+                }
+                
+                return foundReplies;
+            }
+            
+            // 提取定时相关变量
+            async function extractTimingVariables(responseData) {
+                currentReadTime = null;
+                isTimeUp = null;
+                
+                if (!responseData || typeof responseData !== 'object') {
+                    addLog(`⚠️ 响应数据无效，无法提取定时变量`, 'warning');
+                    return;
+                }
+                
+                // 递归搜索定时变量
+                function searchTimingRecursive(obj) {
+                    if (Array.isArray(obj)) {
+                        obj.forEach(item => searchTimingRecursive(item));
+                        return;
+                    }
+                    
+                    if (obj && typeof obj === 'object') {
+                        // 查找拟人化阅读节点
+                        if (obj.moduleName && obj.moduleName.includes('拟人化阅读')) {
+                            if (obj.pluginOutput) {
+                                if (obj.pluginOutput.readtime !== undefined) {
+                                    currentReadTime = parseInt(obj.pluginOutput.readtime);
+                                    addLog(`📖 获取readtime: ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                                }
+                                if (obj.pluginOutput.isTimeUp !== undefined) {
+                                    isTimeUp = obj.pluginOutput.isTimeUp;
+                                    addLog(`⏰ 获取isTimeUp: ${isTimeUp}`, 'success');
+                                }
+                            }
+                            
+                            // 备用：从customOutputs中查找
+                            if (obj.customOutputs) {
+                                if (!currentReadTime && obj.customOutputs.readtime) {
+                                    currentReadTime = parseInt(obj.customOutputs.readtime);
+                                    addLog(`📖 从customOutputs获取readtime: ${currentReadTime}ms`, 'info');
+                                }
+                                
+                                if (isTimeUp === null && obj.customOutputs.isTimeUp !== undefined) {
+                                    isTimeUp = obj.customOutputs.isTimeUp;
+                                    addLog(`⏰ 从customOutputs获取isTimeUp: ${isTimeUp}`, 'info');
+                                }
+                            }
+                        }
+                        
+                        // 递归搜索所有属性
+                        Object.values(obj).forEach(value => searchTimingRecursive(value));
+                    }
+                }
+                
+                searchTimingRecursive(responseData);
+                
+                // 记录最终结果
+                addLog(`🎯 最终变量 - readtime: ${currentReadTime}ms, isTimeUp: ${isTimeUp}`, 'success');
+            }
+            
+            // 处理定时任务逻辑
+            async function handleTimerLogic() {
+                if (isTimeUp === true) {
+                    addLog(`✅ isTimeUp=true，用户已获取到消息，不启动定时任务`, 'success');
+                    return;
+                }
+                
+                if (isTimeUp === false && currentReadTime > 0) {
+                    // 修改为 2*readtime + 2秒
+                    const timerDuration = 2 * currentReadTime + 2000; // 2*readtime + 2秒
+                    addLog(`⏳ isTimeUp=false，启动定时任务，${timerDuration}ms后执行二次请求`, 'info');
+                    addLog(`📊 计算公式: 2 * ${currentReadTime}ms + 2000ms = ${timerDuration}ms`, 'info');
+                    startTimer(timerDuration);
+                } else {
+                    addLog(`⚠️ 无法启动定时任务 - isTimeUp: ${isTimeUp}, readtime: ${currentReadTime}`, 'warning');
+                }
+            }
+            
+            // 显示状态
+            function showStatus(message, type) {
+                statusIndicator.textContent = message;
+                statusIndicator.className = `status-indicator status-${type}`;
+                statusIndicator.style.display = 'block';
+            }
+            
+            // 隐藏状态
+            function hideStatus() {
+                statusIndicator.style.display = 'none';
+            }
+            
+            // 添加消息到聊天界面
+            function addMessage(sender, text) {
+                const processedText = processEmojiAndText(text);
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = `message message-${sender === '用户' ? 'user' : 'ai'}`;
+                
+                messageElement.innerHTML = `
+                    <div class="avatar">${sender === '用户' ? '我' : 'AI'}</div>
+                    <div class="message-content">${processedText}</div>
+                `;
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // FastGPT引用标记过滤器
+            class CitationFilter {
+                constructor() {
+                    this.patterns = {
+                        fastgptCitation: /\[([a-f0-9]{24})\]\(CITE\)/gi,
+                        generalCitation: /\[([a-f0-9]+)\]\(CITE\)/gi
+                    };
+                }
+                
+                cleanFastGPTCitations(content) {
+                    if (!content || typeof content !== 'string') {
+                        return content;
+                    }
+                    
+                    return content
+                        .replace(/\[([a-f0-9]{24})\]\(CITE\)/gi, '')
+                        .replace(/\[([a-f0-9]+)\]\(CITE\)/gi, '')
+                        .trim();
+                }
+            }
+            
+            // 全局过滤器实例
+            const citationFilter = new CitationFilter();
+
+            // 处理emoji和特殊字符
+            function processEmojiAndText(text) {
+                if (!text || typeof text !== 'string') {
+                    return text;
+                }
+                
+                // 🔑 关键：首先移除引用标记，避免在用户端显示
+                text = citationFilter.cleanFastGPTCitations(text);
+                
+                // 然后处理可能剩余的emoji格式（如果有的话）
+                text = text.replace(/\[([a-f0-9]+)\]/g, (match, emojiCode) => {
+                    // 特殊处理：根据hex code的特征返回相应emoji
+                    const firstChars = emojiCode.substring(0, 4).toLowerCase();
+                    const emojiMapping = {
+                        '682b': '😊', // 笑脸
+                        '1f60': '😊', // 各种笑脸
+                        '1f44': '👍', // 赞
+                        '1f49': '💰', // 钱袋
+                        '1f91': '🤝', // 握手
+                        '1f68': '🚀', // 火箭
+                        '2728': '✨', // 星星
+                        '1f52': '🔥'  // 火
+                    };
+                    
+                    for (const [key, emoji] of Object.entries(emojiMapping)) {
+                        if (emojiCode.startsWith(key)) {
+                            return emoji;
+                        }
+                    }
+                    
+                    return ''; // 不显示未知的代码
+                });
+                
+                return text;
+            }
+            
+            // 清空聊天
+            function clearChat() {
+                chatMessages.innerHTML = '';
+                messageHistory = [];
+                
+                // 清除定时器
+                if (currentTimer) {
+                    clearTimeout(currentTimer);
+                    currentTimer = null;
+                }
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                
+                hideTimer();
+                hideStatus();
+                
+                // 重置变量
+                currentReadTime = null;
+                isTimeUp = null;
+                chatSessionId = 'session_' + Date.now();
+                
+                // 清空报文信息
+                clearMessages();
+                
+                addLog('🗑️ 聊天记录已清空，状态已重置', 'info');
+            }
+            
+            // 添加日志
+            function addLog(message, type = 'info') {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.innerHTML = `<span class="log-time">[${timeString}]</span> ${message}`;
+                
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // 控制台输出
+                if (type === 'error') {
+                    console.error(message);
+                } else if (type === 'warning') {
+                    console.warn(message);
+                } else if (type === 'success') {
+                    console.log(`%c${message}`, 'color: green');
+                } else {
+                    console.log(message);
+                }
+            }
+            
+            // 报文信息相关函数
+            function switchTab(tabType) {
+                // 更新tab按钮状态
+                if (tabType === 'request') {
+                    requestTab.classList.add('active');
+                    responseTab.classList.remove('active');
+                    requestMessage.classList.add('active');
+                    responseMessage.classList.remove('active');
+                } else {
+                    responseTab.classList.add('active');
+                    requestTab.classList.remove('active');
+                    responseMessage.classList.add('active');
+                    requestMessage.classList.remove('active');
+                }
+            }
+            
+            function clearMessages() {
+                requestTime.textContent = '暂无请求';
+                requestStatus.textContent = '';
+                requestStatus.className = 'message-status';
+                requestBody.textContent = '暂无请求数据';
+                
+                responseTime.textContent = '暂无响应';
+                responseStatus.textContent = '';
+                responseStatus.className = 'message-status';
+                responseBody.textContent = '暂无响应数据';
+                
+                addLog('🧹 报文信息已清空', 'info');
+            }
+            
+            function displayRequestMessage(requestData, url) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                
+                requestTime.textContent = `${timeString} - POST ${url}`;
+                requestStatus.textContent = '发送中';
+                requestStatus.className = 'message-status pending';
+                
+                // 格式化显示请求体
+                const formattedRequest = {
+                    url: url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer [已隐藏]'
+                    },
+                    body: requestData
+                };
+                
+                requestBody.textContent = JSON.stringify(formattedRequest, null, 2);
+            }
+            
+            function displayResponseMessage(responseData, isSuccess) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                
+                responseTime.textContent = `${timeString} - 响应接收`;
+                
+                if (isSuccess) {
+                    responseStatus.textContent = '成功';
+                    responseStatus.className = 'message-status success';
+                } else {
+                    responseStatus.textContent = '失败';
+                    responseStatus.className = 'message-status error';
+                }
+                
+                // 格式化显示响应体
+                responseBody.textContent = JSON.stringify(responseData, null, 2);
+            }
+            
+            // 启动定时器
+            function startTimer(duration) {
+                // 清除之前的定时器
+                if (currentTimer) {
+                    clearTimeout(currentTimer);
+                }
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                
+                timerStartTime = Date.now();
+                const endTime = timerStartTime + duration;
+                
+                // 显示定时器
+                showTimer(duration);
+                
+                // 更新定时器显示
+                timerInterval = setInterval(() => {
+                    const remaining = endTime - Date.now();
+                    if (remaining <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        hideTimer();
+                    } else {
+                        updateTimerDisplay(remaining);
+                    }
+                }, 100);
+                
+                // 设置定时任务
+                currentTimer = setTimeout(async () => {
+                    currentTimer = null;
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    hideTimer();
+                    
+                    addLog(`⏰ 定时任务触发，执行二次请求`, 'success');
+                    await processApiRequest(true); // true表示定时任务触发
+                }, duration);
+            }
+            
+            // 显示定时器
+            function showTimer(duration) {
+                timerDisplay.style.display = 'block';
+                updateTimerDisplay(duration);
+            }
+            
+            // 更新定时器显示
+            function updateTimerDisplay(remaining) {
+                const seconds = Math.ceil(remaining / 1000);
+                timerDisplay.textContent = `⏰ 定时任务倒计时: ${seconds}秒`;
+            }
+            
+            // 隐藏定时器
+            function hideTimer() {
+                timerDisplay.style.display = 'none';
+            }
+            
+            // 初始化
+            addLog('🚀 营销智能体模拟微信测试页面加载完成', 'info');
+            addLog('📋 功能说明：', 'info');
+            addLog('  - 根据isTimeUp判断是否启动定时任务', 'info');
+            addLog('  - 定时时长为readtime+2秒', 'info');
+            addLog('  - 从指定回复节点textOutput获取回复内容', 'info');
+            addLog('  - 只发送当前消息，不包含历史消息', 'info');
+            addLog('  - 用户新输入会中断当前定时任务', 'info');
+
+            document.getElementById('uploadBtn').onclick = function() {
+                document.getElementById('imageUpload').click();
+            };
+            document.getElementById('imageUpload').addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    // 固定赋值
+                    picture = 'https://picture-share-001-dpxj.oss-cn-beijing.aliyuncs.com/AI%E6%B5%8B%E8%AF%95%E5%9B%BE%E7%89%87.png';
+                    
+                    // 添加日志记录
+                    addLog(`📸 图片已上传: ${picture}`, 'success');
+                    
+                    // 聊天区只插入图片消息，不显示任何文字
+                    const chatMessages = document.querySelector('.chat-messages');
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message message-user';
+                    messageDiv.innerHTML = `
+                        <div class="avatar">用户</div>
+                        <div class="message-content"><img src="${picture}" alt="图片" style="max-width:120px;max-height:120px;border-radius:6px;"></div>
+                    `;
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

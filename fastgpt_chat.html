@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastGPT 对话演示</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --accent: #6366f1;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --user: #0ea5e9;
+      --assistant: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% -10%, #1d2340 0%, #0f172a 60%);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn.secondary { background: #334155; }
+    .chat {
+      background: linear-gradient(180deg, #0b1220, #0b1220);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .bubble {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .user .bubble { border-color: rgba(14,165,233,.2); box-shadow: inset 0 0 0 1px rgba(14,165,233,.15); }
+    .assistant .bubble { border-color: rgba(16,185,129,.2); box-shadow: inset 0 0 0 1px rgba(16,185,129,.15); }
+    .footer {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .textarea {
+      flex: 1;
+      min-height: 44px;
+      max-height: 160px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      outline: none;
+      resize: vertical;
+    }
+    .hint { color: var(--muted); font-size: 12px; }
+  </style>
+  <script>
+    // 简单的客户端设置管理
+    const Settings = {
+      load() {
+        return {
+          apiKey: localStorage.getItem('fastgpt_api_key') || 'fastgpt-swpHRt6ejDZfrB35l9pDT1yNarbF3IWfFbLwsiMLJ8nhed3sY2oM5dbtr36jgPTbE',
+          model: localStorage.getItem('fastgpt_model') || 'gpt-3.5-turbo'
+        };
+      },
+      save({ apiKey, model }) {
+        if (apiKey !== undefined) localStorage.setItem('fastgpt_api_key', apiKey);
+        if (model !== undefined) localStorage.setItem('fastgpt_model', model);
+      }
+    };
+
+    // API 地址选择，file:/ 或 localhost 时使用本地代理避免 CORS
+    const API_BASE = (location.hostname === 'localhost' || location.protocol === 'file:')
+      ? 'http://localhost:3001/api'
+      : 'https://api.fastgpt.in/api';
+
+    // 简易聊天控制器
+    class ChatUI {
+      constructor() {
+        this.messagesEl = null;
+        this.inputEl = null;
+        this.sendBtn = null;
+        this.clearBtn = null;
+        this.apiKey = '';
+        this.model = 'gpt-3.5-turbo';
+        this.messages = [
+          { role: 'system', content: '你是一个专业且友好的中文智能助理，请用简洁清晰的方式回答问题。' }
+        ];
+      }
+
+      init() {
+        this.messagesEl = document.getElementById('messages');
+        this.inputEl = document.getElementById('input');
+        this.sendBtn = document.getElementById('send');
+        this.clearBtn = document.getElementById('clear');
+        const s = Settings.load();
+        this.apiKey = s.apiKey;
+        this.model = s.model;
+
+        this.sendBtn.addEventListener('click', () => this.handleSend());
+        this.clearBtn.addEventListener('click', () => this.clearChat());
+        this.inputEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.handleSend();
+          }
+        });
+      }
+
+      appendMessage(role, content) {
+        const msg = document.createElement('div');
+        msg.className = `msg ${role}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = content;
+        msg.appendChild(bubble);
+        this.messagesEl.appendChild(msg);
+        this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+      }
+
+      async handleSend() {
+        const text = this.inputEl.value.trim();
+        if (!text) return;
+        if (!this.apiKey) {
+          alert('缺少 FastGPT API Key');
+          return;
+        }
+
+        // 推入用户消息，UI 先显示
+        this.messages.push({ role: 'user', content: text });
+        this.appendMessage('user', text);
+        this.inputEl.value = '';
+        this.sendBtn.disabled = true;
+
+        try {
+          const payload = {
+            model: this.model,
+            messages: this.messages.filter(m => m.role !== 'system' || m.content.trim().length > 0)
+          };
+
+          const res = await fetch(`${API_BASE}/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${this.apiKey}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const txt = await res.text();
+            throw new Error(`HTTP ${res.status}: ${txt}`);
+          }
+
+          const data = await res.json();
+          const content = data?.choices?.[0]?.message?.content?.trim() || '[无内容]';
+          this.messages.push({ role: 'assistant', content });
+          this.appendMessage('assistant', content);
+        } catch (err) {
+          console.error(err);
+          this.appendMessage('assistant', `请求失败：${err.message}`);
+        } finally {
+          this.sendBtn.disabled = false;
+        }
+      }
+
+      clearChat() {
+        this.messages = this.messages.slice(0, 1); // 保留 system
+        this.messagesEl.innerHTML = '';
+      }
+    }
+
+    let chat;
+    window.addEventListener('DOMContentLoaded', () => {
+      chat = new ChatUI();
+      chat.init();
+    });
+  </script>
+  </head>
+<body>
+  <div class="container">
+    <div class="header" style="background: transparent; border: none; padding: 0; display: flex; justify-content: flex-end;">
+      <button id="clear" class="btn secondary">清空对话</button>
+    </div>
+
+    <div class="chat">
+      <div id="messages" class="messages"></div>
+      <div class="footer">
+        <textarea id="input" class="textarea" placeholder="输入消息，Enter发送，Shift+Enter换行"></textarea>
+        <button id="send" class="btn">发送</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

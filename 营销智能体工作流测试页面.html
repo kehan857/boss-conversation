@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>营销智能体工作流测试</title>
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #f5222d;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+            --border-color: #e8e8e8;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: var(--light-bg);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        main {
+            padding: 20px;
+        }
+        
+        .panel {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 12px 15px;
+            background-color: #f0f0f0;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-body {
+            padding: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #40a9ff;
+        }
+        
+        button:disabled {
+            background-color: #d9d9d9;
+            cursor: not-allowed;
+        }
+        
+        /* 微信风格聊天界面 */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            background-color: #ebebeb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            max-width: 70%;
+            padding: 0;
+            display: flex;
+        }
+        
+        .message-user {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+        
+        .message-ai {
+            margin-right: auto;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            background-color: #ccc;
+            margin: 0 8px;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .message-content {
+            background-color: white;
+            padding: 10px 12px;
+            border-radius: 4px;
+            position: relative;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+            unicode-bidi: isolate;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .message-user .message-content {
+            background-color: #9EEB62;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .typing-indicator {
+            display: none !important;
+        }
+        
+        .typing-indicator span {
+            display: none !important;
+        }
+        
+        @keyframes typing {
+            0% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        
+        /* 日志和调试区域 */
+        .log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+        
+        .log-time {
+            color: #888;
+        }
+        
+        .log-info {
+            color: var(--primary-color);
+        }
+        
+        .log-warning {
+            color: var(--warning-color);
+        }
+        
+        .log-error {
+            color: var(--error-color);
+        }
+        
+        .log-success {
+            color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>营销智能体工作流测试</h1>
+            <div class="subtitle">测试多消息汇总和分段回复功能 v2.12 - 增强isTimeUp调试</div>
+        </header>
+        
+        <main>
+            <div class="panel">
+                <div class="panel-header">
+                    <span>API配置</span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label for="apiKey">API密钥</label>
+                        <input type="text" id="apiKey" value="fastgpt-o1RLNv6G3Bz6d3dm7nLaH4liAexaTKX0MiWxJMsveKgeN6UzcbWfsevL">
+                    </div>
+                    <div class="form-group">
+                        <label for="apiUrl">API地址</label>
+                        <input type="text" id="apiUrl" value="https://api.fastgpt.in/api">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <span>微信模拟聊天</span>
+                    <button id="clearChatBtn">清空聊天</button>
+                </div>
+                <div class="panel-body">
+                    <div class="chat-container">
+                        <div id="chatMessages" class="chat-messages">
+                            <div class="message message-ai">
+                                <div class="avatar">AI</div>
+                                <div class="message-content">
+                                    您好，我是**集团顾问，请问您最近关注的项目是什么？
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="userInput" placeholder="输入消息..." />
+                            <button id="sendButton">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <span>日志</span>
+                    <button id="clearLogsBtn">清空日志</button>
+                </div>
+                <div class="panel-body">
+                    <div id="logContainer" class="log-container"></div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <span>调试信息</span>
+                    <button id="toggleDebugBtn">显示/隐藏</button>
+                </div>
+                <div class="panel-body" id="debugPanel" style="display: none;">
+                    <div class="form-group">
+                        <label>请求内容</label>
+                        <pre id="requestDebug" style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow: auto; max-height: 150px; font-size: 12px;"></pre>
+                    </div>
+                    <div class="form-group">
+                        <label>响应内容</label>
+                        <pre id="responseDebug" style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow: auto; max-height: 150px; font-size: 12px;"></pre>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM元素
+            const apiKeyInput = document.getElementById('apiKey');
+            const apiUrlInput = document.getElementById('apiUrl');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const chatMessages = document.getElementById('chatMessages');
+            const clearChatBtn = document.getElementById('clearChatBtn');
+            const clearLogsBtn = document.getElementById('clearLogsBtn');
+            const toggleDebugBtn = document.getElementById('toggleDebugBtn');
+            const debugPanel = document.getElementById('debugPanel');
+            const logContainer = document.getElementById('logContainer');
+            const requestDebug = document.getElementById('requestDebug');
+            const responseDebug = document.getElementById('responseDebug');
+            
+            // 全局变量
+            let messageHistory = [];
+            let lastMessageTime = 0; // 修复：初始值设为0，表示首次对话
+            let messageCount = 0;
+            let waitingForResponse = false;
+            let timeoutTimer = null;
+            let currentReadTime = null; // 阅读时间，必须从API响应中获取，不允许默认值
+            let isReading = false; // 标记AI是否正在阅读
+            let readingStartTime = null; // 开始阅读的时间
+            let hasReceivedResponse = false; // 标记是否已收到第一次响应
+            let isSecondRequest = false; // 标记是否为第二次请求
+            let chatSessionId = 'session_' + Date.now(); // 新增：会话ID
+            let isPreparingSecondRequest = false; // 新增：标记是否正在准备第二次请求
+            
+            // 事件监听器
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            sendButton.addEventListener('click', sendMessage);
+            
+            clearChatBtn.addEventListener('click', function() {
+                chatMessages.innerHTML = '';
+                addLog('🗑️ 聊天记录已清空', 'info');
+                // 添加欢迎消息
+                addMessage('AI', '您好，我是营销智能体，请问有什么可以帮助您的？');
+                
+                // 🔍 监控清空聊天前的lastTime值
+                addLog(`🔍 [监控] 清空聊天前lastTime: ${lastMessageTime}`, 'info');
+                
+                // 重置状态
+                messageHistory = [];
+                lastMessageTime = 0; // 修复：重置为0
+                messageCount = 0;
+                isReading = false;
+                hasReceivedResponse = false;
+                isSecondRequest = false;
+                isPreparingSecondRequest = false; // 重置准备标记
+                currentReadTime = null; // 🔧 新增：重置阅读时间，要求重新从API获取
+                if (timeoutTimer) {
+                    clearTimeout(timeoutTimer);
+                    timeoutTimer = null;
+                }
+                
+                // 🔍 监控清空聊天后的lastTime值
+                addLog(`🔍 [监控] 清空聊天后lastTime: ${lastMessageTime}`, 'info');
+                addLog(`🔄 系统状态已重置，read_time将从下次API请求中重新获取`, 'info');
+            });
+            
+            clearLogsBtn.addEventListener('click', function() {
+                logContainer.innerHTML = '';
+                addLog('🧹 日志已清空', 'info');
+            });
+            
+            toggleDebugBtn.addEventListener('click', function() {
+                debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // 发送消息函数
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+                
+                // 🔥 v2.8简化逻辑 - 基础双请求机制
+                addLog(`🔥 [v2.8] 基础双请求机制启动`, 'success');
+                
+                // 清空输入框
+                userInput.value = '';
+                
+                // 显示用户消息
+                addMessage('用户', message);
+                
+                // 记录本次消息时间
+                const currentMessageTime = Date.now();
+                
+                // 更新消息计数
+                messageCount++;
+                
+                // 添加到历史记录
+                messageHistory.push(message);
+                
+                // 记录当前状态
+                addLog(`📝 收到用户消息: "${message}"`, 'info');
+                addLog(`📊 当前状态: 消息数=${messageCount}`, 'info');
+                
+                // 如果当前正在等待响应，不启动新请求
+                if (waitingForResponse) {
+                    addLog('⏳ 智能体正在处理中，暂不启动新的请求', 'warning');
+                    return;
+                }
+                
+                // 重置状态
+                hasReceivedResponse = false;
+                isSecondRequest = false;
+                
+                addLog(`🔄 重置请求状态`, 'info');
+                
+                // ✅ 立即发送第一次API请求
+                addLog(`🚀 立即发送第一次API请求`, 'success');
+                processMessages(false); // false表示第一次请求
+            }
+            
+            // 处理消息并发送到API
+            async function processMessages(isSecond = false) {
+                // 如果没有消息，直接返回
+                if (messageHistory.length === 0) {
+                    addLog('❌ 没有消息需要处理', 'warning');
+                    return;
+                }
+                
+                const requestType = isSecond ? '第二次' : '第一次';
+                
+                // 🔧 新增：如果是第二次请求，重置准备标记
+                if (isSecond) {
+                    isPreparingSecondRequest = false;
+                    addLog(`🔄 第二次请求开始，重置准备标记`, 'info');
+                }
+                
+                // 🔒 强化防重复检查
+                if (isSecond) {
+                    if (hasReceivedResponse) {
+                        addLog('🛑 第一次请求已完成且isTimeUp为true，直接跳过第二次请求', 'warning');
+                    return;
+                    }
+                    if (waitingForResponse && !isSecondRequest) {
+                        addLog('🛑 第一次请求仍在处理，直接跳过第二次请求', 'warning');
+                        return;
+                    }
+                }
+                
+                waitingForResponse = true;
+                addLog(`🤖 开始${requestType}智能处理 ${messageHistory.length} 条消息...`, 'info');
+                
+                try {
+                    // 准备API请求
+                    const apiKey = apiKeyInput.value.trim();
+                    const apiUrl = apiUrlInput.value.trim();
+                    
+                    if (!apiKey || !apiUrl) {
+                        throw new Error('API密钥或地址不能为空');
+                    }
+                    
+                    // 构建请求体
+                    const requestBody = {
+                        chatId: chatSessionId, // 使用固定的会话ID
+                        stream: false,
+                        detail: true,
+                        variables: {
+                            lastMessageTime: lastMessageTime,
+                            messageCount: messageCount,
+                            messageHistory: messageHistory,
+                            read_time: currentReadTime,
+                            isSecondRequest: isSecond,
+                            hasReceivedResponse: hasReceivedResponse
+                        },
+                        messages: [{
+                            role: "user",
+                            content: messageHistory.join("\n")
+                        }]
+                    };
+                    
+                    // 🔍 监控发送给API的lastTime值
+                    addLog(`🔍 [监控] 发送给API的lastMessageTime: ${lastMessageTime}`, 'info');
+                    
+                    // 显示请求内容
+                    requestDebug.textContent = JSON.stringify(requestBody, null, 2);
+                    
+                    addLog(`🌐 发送${requestType}API请求: ${apiUrl}`, 'info');
+                    
+                    // 发送请求
+                    const response = await fetch(`${apiUrl}/v1/chat/completions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API请求失败(${response.status}): ${errorText}`);
+                    }
+                    
+                    // 解析响应
+                    const responseData = await response.json();
+                    
+                    // 显示响应内容
+                    responseDebug.textContent = JSON.stringify(responseData, null, 2);
+                    
+                    addLog(`✅ ${requestType}API响应成功，开始处理回复内容`, 'success');
+                    
+                    // 🔍 添加明显的API响应监控
+                    addLog(`🔍 [监控] 🚨 API响应处理开始 🚨`, 'success');
+                    addLog(`🔍 [监控] 响应数据类型: ${typeof responseData}`, 'info');
+                    addLog(`🔍 [监控] 是否有responseData: ${!!responseData}`, 'info');
+                    addLog(`🔍 [监控] 是否有responseData.responseData: ${!!responseData.responseData}`, 'info');
+                    
+                    // 处理响应
+                    handleResponse(responseData, requestType);
+                    
+                } catch (error) {
+                    addLog(`❌ ${requestType}请求错误: ${error.message}`, 'error');
+                    console.error('API请求错误:', error);
+                    
+                    // 🔧 错误时不显示回复消息，仅记录日志
+                    addLog(`⚠️ ${requestType}请求失败，不显示错误回复`, 'warning');
+                    
+                } finally {
+                    // 🔍 监控finally块开始时的lastTime值
+                    addLog(`🔍 [监控] finally块开始，lastTime: ${lastMessageTime}`, 'info');
+                    
+                    // 重置状态
+                    waitingForResponse = false;
+                    
+                    // 🔧 优化状态重置逻辑
+                    if (!isSecond) {
+                        // 🔧 修复：只有在确定不需要继续等待时才停止倒计时
+                        if (hasReceivedResponse) {
+                            // 第一次请求完成且isTimeUp=true，停止倒计时
+                            isReading = false;
+                            addLog(`🔄 第一次请求完成且无需第二次请求，清理定时器状态`, 'info');
+                        } else {
+                            // 第一次请求完成但isTimeUp=false，保持倒计时继续
+                            addLog(`🔄 第一次请求完成但需要等待第二次请求，保持倒计时状态`, 'info');
+                            addLog(`🔍 [监控] timeoutTimer状态: ${timeoutTimer ? '运行中' : '已清除'}`, 'info');
+                            addLog(`🔍 [监控] isReading状态: ${isReading}`, 'info');
+                            addLog(`🔍 [监控] readingStartTime: ${readingStartTime}`, 'info');
+                        }
+                    }
+                    
+                    // 🔧 修复：只有在确定不需要第二次请求时才清空消息历史
+                    const shouldClearHistory = isSecond || // 第二次请求完成
+                                             hasReceivedResponse || // 第一次请求完成且isTimeUp=true
+                                             (!isSecond && timeoutTimer === null && !isReading && !isPreparingSecondRequest); // 第一次请求完成且定时器已清除且不在阅读状态且不在准备第二次请求
+                    
+                    if (shouldClearHistory) {
+                        messageCount = 0;
+                        messageHistory = [];
+                        addLog(`🔄 ${requestType}请求完成，状态重置（清空消息历史）`, 'info');
+                    } else {
+                        addLog(`🔄 ${requestType}请求完成，保留消息历史供第二次请求使用`, 'info');
+                        if (isPreparingSecondRequest) {
+                            addLog(`🚀 检测到正在准备第二次请求，保留消息历史`, 'info');
+                        }
+                    }
+                    
+                    // 🔍 监控finally块结束时的lastTime值
+                    addLog(`🔍 [监控] finally块结束，lastTime: ${lastMessageTime}`, 'info');
+                }
+            }
+            
+            // 🔧 新增：提取并更新lastTime的专用函数
+            function extractAndUpdateLastTime(responseData) {
+                // 🔍 记录函数调用和当前值
+                addLog(`🔍 [监控] extractAndUpdateLastTime被调用，当前lastTime: ${lastMessageTime}`, 'info');
+                
+                try {
+                    // 方法1：从newVariables中提取lastTime/lastMessageTime
+                    if (responseData.newVariables) {
+                        addLog(`🔍 [监控] 检查newVariables: ${JSON.stringify(responseData.newVariables)}`, 'info');
+                        
+                        if (responseData.newVariables.lastTime) {
+                            const newLastTime = parseInt(responseData.newVariables.lastTime);
+                            if (newLastTime > 0) {
+                                const oldValue = lastMessageTime;
+                                lastMessageTime = newLastTime;
+                                addLog(`🕐 从newVariables.lastTime更新全局变量: ${oldValue} → ${lastMessageTime}`, 'success');
+                                return;
+                            }
+                        }
+                        
+                        if (responseData.newVariables.lastMessageTime) {
+                            const newLastTime = parseInt(responseData.newVariables.lastMessageTime);
+                            if (newLastTime > 0) {
+                                const oldValue = lastMessageTime;
+                                lastMessageTime = newLastTime;
+                                addLog(`🕐 从newVariables.lastMessageTime更新全局变量: ${oldValue} → ${lastMessageTime}`, 'success');
+                    return;
+                            }
+                        }
+                }
+
+                    // 方法2：从responseData节点中查找时间戳生成节点
+                if (Array.isArray(responseData.responseData)) {
+                        addLog(`🔍 [监控] 遍历${responseData.responseData.length}个响应节点`, 'info');
+                        
+                        for (const node of responseData.responseData) {
+                            // 🔍 详细记录每个节点信息
+                            addLog(`🔍 [监控] 检查节点: ${node.moduleName || '未知'} (${node.moduleType || '未知类型'})`, 'info');
+                            
+                            // 查找代码运行节点的时间戳输出
+                            if (node && node.customOutputs) {
+                                addLog(`🔍 [监控] 发现customOutputs: ${JSON.stringify(node.customOutputs)}`, 'info');
+                                
+                                // 优先查找currentTime（根据截图显示）
+                                if (node.customOutputs.currentTime) {
+                                    const newLastTime = parseInt(node.customOutputs.currentTime);
+                                    addLog(`🔍 [监控] 找到currentTime: ${newLastTime}`, 'info');
+                                    if (newLastTime > 0) {
+                                        const oldValue = lastMessageTime;
+                                        lastMessageTime = newLastTime;
+                                        addLog(`🕐 ✅ 从${node.moduleName || '节点'}的customOutputs.currentTime更新全局变量: ${oldValue} → ${lastMessageTime}`, 'success');
+                                        return;
+                                    }
+                                }
+                                
+                                if (node.customOutputs.timestamp) {
+                                    const newLastTime = parseInt(node.customOutputs.timestamp);
+                                    if (newLastTime > 0) {
+                                        const oldValue = lastMessageTime;
+                                        lastMessageTime = newLastTime;
+                                        addLog(`🕐 ✅ 从${node.moduleName || '节点'}的customOutputs.timestamp更新全局变量: ${oldValue} → ${lastMessageTime}`, 'success');
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 方法3：如果都没找到，并且lastMessageTime还是0，则使用当前时间
+                    if (lastMessageTime === 0) {
+                        const oldValue = lastMessageTime;
+                        lastMessageTime = Date.now();
+                        addLog(`🕐 未找到API返回的时间戳，使用当前时间初始化: ${oldValue} → ${lastMessageTime}`, 'warning');
+                        } else {
+                        addLog(`🕐 未找到新的时间戳，保持现有值: ${lastMessageTime}`, 'info');
+                    }
+                    
+                } catch (error) {
+                    addLog(`❌ 提取lastTime失败: ${error.message}`, 'error');
+                }
+                
+                // 🔍 记录函数结束时的值
+                addLog(`🔍 [监控] extractAndUpdateLastTime结束，最终lastTime: ${lastMessageTime}`, 'info');
+            }
+            
+            // 🔧 新增：提取并更新read_time的专用函数
+            function extractAndUpdateReadTime(responseData) {
+                try {
+                    let newReadTime = null;
+                    
+                    // 🔧 优先方法：从pluginOutput.readtime中提取（根据报文结构）
+                    if (Array.isArray(responseData.responseData)) {
+                        for (const node of responseData.responseData) {
+                            // 查找包含pluginOutput.readtime的节点
+                            if (node && node.pluginOutput && node.pluginOutput.readtime) {
+                                newReadTime = parseInt(node.pluginOutput.readtime);
+                                if (newReadTime > 0) {
+                                    const oldValue = currentReadTime;
+                                    currentReadTime = newReadTime;
+                                    addLog(`📖 从${node.moduleName || '插件节点'}的pluginOutput.readtime更新阅读时间: ${oldValue || '未设置'}ms → ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                                    
+                                    // 🔧 新增：首次获取read_time时显示配置信息
+                                    if (oldValue === null) {
+                                        addLog(`⚙️ 从API获取到真实配置 - 阅读时间: ${currentReadTime}ms，定时任务延迟: ${currentReadTime + 1000}ms (${Math.ceil((currentReadTime + 1000)/1000)}秒)`, 'success');
+                                    }
+                                    
+                                    return currentReadTime;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 方法2：从customOutputs中提取read_time
+                    if (Array.isArray(responseData.responseData)) {
+                        for (const node of responseData.responseData) {
+                            // 🔧 修复：优先检查customOutputs
+                            if (node && node.customOutputs && node.customOutputs.read_time) {
+                                newReadTime = parseInt(node.customOutputs.read_time);
+                                if (newReadTime > 0) {
+                                    const oldValue = currentReadTime;
+                                    currentReadTime = newReadTime;
+                                    addLog(`📖 从${node.moduleName || '代码节点'}的customOutputs更新阅读时间: ${oldValue || '未设置'}ms → ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                                    
+                                    // 🔧 新增：首次获取read_time时显示配置信息
+                                    if (oldValue === null) {
+                                        addLog(`⚙️ 从API获取到真实配置 - 阅读时间: ${currentReadTime}ms，定时任务延迟: ${currentReadTime + 1000}ms (${Math.ceil((currentReadTime + 1000)/1000)}秒)`, 'success');
+                                    }
+                                    
+                                    return currentReadTime;
+                                }
+                            }
+                            
+                            // 扩展：在customOutputs中查找可能的时间相关字段
+                            if (node && node.customOutputs) {
+                                for (const [key, value] of Object.entries(node.customOutputs)) {
+                                    if ((key.includes('read') || key.includes('time')) && typeof value === 'number' && value > 500 && value < 60000) {
+                                        const oldValue = currentReadTime;
+                                        currentReadTime = value;
+                                        addLog(`📖 从${node.moduleName || '节点'}的customOutputs.${key}更新阅读时间: ${oldValue || '未设置'}ms → ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                                        
+                                        // 🔧 新增：首次获取read_time时显示配置信息
+                                        if (oldValue === null) {
+                                            addLog(`⚙️ 从API获取到真实配置 - 阅读时间: ${currentReadTime}ms，定时任务延迟: ${currentReadTime + 1000}ms (${Math.ceil((currentReadTime + 1000)/1000)}秒)`, 'success');
+                                        }
+                                        
+                                        return currentReadTime;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 方法3：从newVariables中提取（降低优先级）
+                    if (responseData.newVariables && responseData.newVariables.read_time) {
+                        newReadTime = parseInt(responseData.newVariables.read_time);
+                        if (newReadTime > 0) {
+                            const oldValue = currentReadTime;
+                            currentReadTime = newReadTime;
+                            addLog(`📖 从newVariables更新阅读时间: ${oldValue || '未设置'}ms → ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                            
+                            // 🔧 新增：首次获取read_time时显示配置信息
+                            if (oldValue === null) {
+                                addLog(`⚙️ 从API获取到真实配置 - 阅读时间: ${currentReadTime}ms，定时任务延迟: ${currentReadTime + 1000}ms (${Math.ceil((currentReadTime + 1000)/1000)}秒)`, 'success');
+                            }
+                            
+                            return currentReadTime;
+                        }
+                    }
+                    
+                    // 方法4：备用检查outputs
+                    if (Array.isArray(responseData.responseData)) {
+                        for (const node of responseData.responseData) {
+                            if (node && node.outputs && node.outputs.read_time) {
+                                newReadTime = parseInt(node.outputs.read_time);
+                                if (newReadTime > 0) {
+                                    const oldValue = currentReadTime;
+                                    currentReadTime = newReadTime;
+                                    addLog(`📖 从${node.moduleName || '节点'}的outputs更新阅读时间: ${oldValue || '未设置'}ms → ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                                    
+                                    // 🔧 新增：首次获取read_time时显示配置信息
+                                    if (oldValue === null) {
+                                        addLog(`⚙️ 从API获取到真实配置 - 阅读时间: ${currentReadTime}ms，定时任务延迟: ${currentReadTime + 1000}ms (${Math.ceil((currentReadTime + 1000)/1000)}秒)`, 'success');
+                                    }
+                                    
+                                    return currentReadTime;
+                                }
+                            }
+                            
+                            // 备用：在outputs中查找可能的时间相关字段
+                            if (node && node.outputs) {
+                                for (const [key, value] of Object.entries(node.outputs)) {
+                                    if ((key.includes('read') || key.includes('time')) && typeof value === 'number' && value > 500 && value < 60000) {
+                                        const oldValue = currentReadTime;
+                                        currentReadTime = value;
+                                        addLog(`📖 从${node.moduleName || '节点'}的outputs.${key}更新阅读时间: ${oldValue || '未设置'}ms → ${currentReadTime}ms (${Math.ceil(currentReadTime/1000)}秒)`, 'success');
+                                        
+                                        // 🔧 新增：首次获取read_time时显示配置信息
+                                        if (oldValue === null) {
+                                            addLog(`⚙️ 从API获取到真实配置 - 阅读时间: ${currentReadTime}ms，定时任务延迟: ${currentReadTime + 1000}ms (${Math.ceil((currentReadTime + 1000)/1000)}秒)`, 'success');
+                                        }
+                                        
+                                        return currentReadTime;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 🔧 修改：如果没有找到read_time，记录错误但不设置默认值
+                    if (currentReadTime === null) {
+                        addLog(`❌ 严重错误：未能从API响应中获取read_time变量，请检查工作流配置`, 'error');
+                        addLog(`⚠️ 提示：工作流必须包含输出read_time变量的代码节点`, 'warning');
+                        addLog(`🔍 调试：请检查pluginOutput.readtime、customOutputs.read_time或outputs.read_time字段`, 'info');
+                        return null;
+                    } else {
+                        addLog(`📖 保持现有阅读时间: ${currentReadTime}ms`, 'info');
+                    }
+                    
+                    return currentReadTime;
+                    
+                } catch (error) {
+                    addLog(`❌ 提取read_time失败: ${error.message}`, 'error');
+                    return currentReadTime;
+                }
+            }
+            
+            // 处理API响应
+            function handleResponse(responseData, requestType = '第一次') {
+                // 🔍 监控响应处理开始时的lastTime值
+                addLog(`🔍 [监控] handleResponse开始，当前lastTime: ${lastMessageTime}`, 'info');
+                
+                // 🔧 首先从API响应中提取并更新read_time
+                extractAndUpdateReadTime(responseData);
+                
+                // 🔧 从API响应中提取并更新lastTime (全局变量)
+                extractAndUpdateLastTime(responseData);
+                
+                // 🔧 检查isTimeUp参数，决定是否阻断第二次请求
+                checkAndHandleTimeUpStatus(responseData, requestType);
+                
+                // 🔍 监控两个提取函数执行后的lastTime值
+                addLog(`🔍 [监控] 提取函数执行后，lastTime: ${lastMessageTime}`, 'info');
+                
+                let aiResponse = '';
+                let hasValidResponse = false;
+
+                // 🔧 最高优先级：查找textOutput变量（指定回复节点的内容）
+                if (Array.isArray(responseData.responseData)) {
+                    for (const node of responseData.responseData) {
+                        // 查找包含textOutput的节点（如指定回复节点、结束节点等）
+                        if (node && node.textOutput) {
+                            aiResponse = String(node.textOutput);
+                            addLog(`📝 从${node.moduleName || '节点'}的textOutput获取回复内容`, 'success');
+                            addLog(`✅ textOutput内容: ${aiResponse.substring(0, 50)}...`, 'success');
+                            addLog(`📊 内容长度: ${aiResponse.length}字符`, 'info');
+                            hasValidResponse = true;
+                            break; // 找到textOutput就停止查找
+                        }
+                        
+                        // 备用：查找loopOutputValue（结束节点的输出）
+                        if (!hasValidResponse && node && node.loopOutputValue) {
+                            aiResponse = String(node.loopOutputValue);
+                            addLog(`📝 从${node.moduleName || '节点'}的loopOutputValue获取回复内容`, 'success');
+                            addLog(`✅ loopOutputValue内容: ${aiResponse.substring(0, 50)}...`, 'success');
+                            addLog(`📊 内容长度: ${aiResponse.length}字符`, 'info');
+                            hasValidResponse = true;
+                            break;
+                        }
+                    }
+                }
+
+                // 🔧 次级优先级：查找content变量（支持增强回复3.0）
+                if (!hasValidResponse && Array.isArray(responseData.responseData)) {
+                    for (const node of responseData.responseData) {
+                        // 1. 优先查找增强回复3.0及相关版本的content变量
+                        if (node && (node.moduleName === '增强回复3.0版本' || 
+                                   node.moduleName === '增强回复2.0版本 Copy#2' || 
+                                   node.moduleName.includes('增强回复'))) {
+                            addLog(`🎭 发现增强回复节点: ${node.moduleName}`, 'success');
+                            
+                            // 查找content变量
+                            let content = null;
+                            
+                            // 方法1：从customOutputs中获取content
+                            if (node.customOutputs && node.customOutputs.content) {
+                                content = node.customOutputs.content;
+                                addLog(`📝 从${node.moduleName}的customOutputs.content获取内容`, 'success');
+                            }
+                            // 方法2：从outputs中获取content
+                            else if (node.outputs && node.outputs.content) {
+                                content = node.outputs.content;
+                                addLog(`📝 从${node.moduleName}的outputs.content获取内容`, 'success');
+                            }
+                            // 方法3：从pluginOutput中获取content
+                            else if (node.pluginOutput && node.pluginOutput.content) {
+                                content = node.pluginOutput.content;
+                                addLog(`📝 从${node.moduleName}的pluginOutput.content获取内容`, 'success');
+                            }
+                            // 方法4：从newVariables中获取content
+                            else if (responseData.newVariables && responseData.newVariables.content) {
+                                content = responseData.newVariables.content;
+                                addLog(`📝 从newVariables.content获取内容`, 'success');
+                            }
+                            
+                            if (content) {
+                                aiResponse = String(content);
+                                addLog(`✅ 成功获取content内容: ${aiResponse.substring(0, 50)}...`, 'success');
+                                addLog(`📊 内容长度: ${aiResponse.length}字符`, 'info');
+                                hasValidResponse = true;
+                                break; // 找到content就停止查找
+                            }
+                        }
+                    }
+                }
+                
+                // 2. 如果没有找到content变量，查找传统的对话节点回复
+                if (!hasValidResponse && Array.isArray(responseData.responseData)) {
+                    addLog(`🔍 未找到content变量，查找传统对话节点回复`, 'info');
+                    
+                        const chatNodes = responseData.responseData.filter(
+                            item => typeof item === 'object' && 
+                            item.moduleType === 'chatNode' && 
+                            item.historyPreview
+                        );
+                        
+                        if (chatNodes.length > 0) {
+                            const lastChatNode = chatNodes[chatNodes.length - 1];
+                            const historyPreview = lastChatNode.historyPreview || [];
+                            const aiMessages = historyPreview.filter(msg => msg.obj === 'AI');
+                            
+                            if (aiMessages.length > 0) {
+                                aiResponse = aiMessages[aiMessages.length - 1].value;
+                                addLog(`💬 从对话节点提取AI回复: ${aiResponse.substring(0, 50)}...`, 'success');
+                            hasValidResponse = true;
+                        }
+                    }
+                }
+                
+                // 3. 备用：标准OpenAI格式响应
+                if (!hasValidResponse && responseData.choices && responseData.choices.length > 0) {
+                        if (responseData.choices[0].message) {
+                            aiResponse = responseData.choices[0].message.content;
+                            addLog(`🤖 从OpenAI格式提取回复: ${aiResponse.substring(0, 50)}...`, 'success');
+                        hasValidResponse = true;
+                    }
+                }
+                
+                // 4. 显示回复内容
+                if (hasValidResponse && aiResponse) {
+                    addLog(`💬 ${requestType}直接显示API原文内容（不分段）`, 'info');
+                    processDirectResponse(aiResponse);
+                } else {
+                    addLog(`⚠️ ${requestType}请求无有效回复内容，跳过显示`, 'warning');
+                    addLog(`🔍 完整响应结构请查看调试面板`, 'info');
+                }
+            }
+            
+            // 🔧 新增：直接显示回复内容（不分段）
+            function processDirectResponse(text) {
+                // 处理emoji和特殊字符
+                const processedText = processEmojiAndText(text);
+                
+                // 创建AI消息框
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message message-ai';
+                messageElement.innerHTML = `
+                    <div class="avatar">AI</div>
+                    <div class="message-content"></div>
+                `;
+                chatMessages.appendChild(messageElement);
+                
+                const messageContent = messageElement.querySelector('.message-content');
+                
+                // 直接显示完整内容，保持API原文格式
+                messageContent.innerHTML = processedText;
+                
+                // 确保滚动到底部
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                addLog(`✅ 内容显示完成，保持原文格式`, 'success');
+            }
+            
+            // 添加消息到聊天界面
+            function addMessage(sender, text) {
+                // 🔧 新增：处理emoji和特殊字符
+                const processedText = processEmojiAndText(text);
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = `message message-${sender === '用户' ? 'user' : 'ai'}`;
+                
+                // 使用innerHTML显示文本，确保emoji正常显示
+                messageElement.innerHTML = `
+                    <div class="avatar">${sender === '用户' ? '我' : 'AI'}</div>
+                    <div class="message-content">${processedText}</div>
+                `;
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // 添加日志
+            function addLog(message, type = 'info') {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour12: false });
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.innerHTML = `<span class="log-time">[${timeString}]</span> ${message}`;
+                
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // 同时输出到控制台，方便调试
+                if (type === 'error') {
+                    console.error(message);
+                } else if (type === 'warning') {
+                    console.warn(message);
+                } else if (type === 'success') {
+                    console.log(`%c${message}`, 'color: green');
+                } else {
+                    console.log(message);
+                }
+            }
+            
+            // 工具函数 - Sleep
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            
+            // 🔧 检查并处理isTimeUp状态
+            function checkAndHandleTimeUpStatus(responseData, requestType) {
+                try {
+                    addLog(`🔍 [检查isTimeUp] 请求类型: ${requestType}`, 'info');
+                    
+                    // 第二次请求直接返回
+                    if (requestType === '第二次') {
+                        addLog(`✅ 第二次请求完成`, 'success');
+                        hasReceivedResponse = true;
+                        return;
+                    }
+                    
+                    // 只有第一次请求才需要检查isTimeUp
+                    if (requestType !== '第一次') {
+                        return;
+                    }
+                    
+                    let isTimeUp = null; // 改为null，便于区分是否找到了值
+                    let foundSource = ''; // 记录找到值的来源
+                    
+                    // 🔍 详细遍历所有节点，查找isTimeUp
+                    addLog(`🔍 开始遍历${responseData.responseData?.length || 0}个响应节点`, 'info');
+                    
+                    if (Array.isArray(responseData.responseData)) {
+                        for (let i = 0; i < responseData.responseData.length; i++) {
+                            const node = responseData.responseData[i];
+                            addLog(`🔍 [节点${i}] 名称: ${node.moduleName || '未知'}, 类型: ${node.moduleType || '未知'}`, 'info');
+                            
+                            // 优先查找代码节点的isTimeUp输出（真实计算值）
+                            if (node && node.customOutputs && node.customOutputs.isTimeUp !== undefined) {
+                                isTimeUp = node.customOutputs.isTimeUp;
+                                foundSource = `${node.moduleName || '代码节点'}的customOutputs`;
+                                addLog(`🔍 ✅ 从${foundSource}获取isTimeUp: ${isTimeUp}`, 'success');
+                                break;
+                            }
+                            
+                            if (node && node.outputs && node.outputs.isTimeUp !== undefined) {
+                                isTimeUp = node.outputs.isTimeUp;
+                                foundSource = `${node.moduleName || '节点'}的outputs`;
+                                addLog(`🔍 ✅ 从${foundSource}获取isTimeUp: ${isTimeUp}`, 'success');
+                                break;
+                            }
+                            
+                            // 🔍 记录所有可能包含isTimeUp的字段
+                            if (node && node.customOutputs) {
+                                const customKeys = Object.keys(node.customOutputs);
+                                if (customKeys.length > 0) {
+                                    addLog(`🔍 [节点${i}] customOutputs字段: ${customKeys.join(', ')}`, 'info');
+                                }
+                            }
+                            
+                            if (node && node.outputs) {
+                                const outputKeys = Object.keys(node.outputs);
+                                if (outputKeys.length > 0) {
+                                    addLog(`🔍 [节点${i}] outputs字段: ${outputKeys.join(', ')}`, 'info');
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 备用：从newVariables中获取（可能是缓存值，优先级较低）
+                    if (isTimeUp === null && responseData.newVariables && responseData.newVariables.isTimeUp !== undefined) {
+                        isTimeUp = responseData.newVariables.isTimeUp;
+                        foundSource = 'newVariables';
+                        addLog(`🔍 ⚠️ 从${foundSource}获取isTimeUp: ${isTimeUp} (备用方案)`, 'warning');
+                    }
+                    
+                    // 🚨 特殊逻辑：如果已经有AI回复内容，但isTimeUp是false，这可能是错误的
+                    if (isTimeUp === false) {
+                        addLog(`🚨 检测到isTimeUp=false但第一次请求有回复内容，这可能不正确`, 'warning');
+                        addLog(`🔍 数据来源: ${foundSource}`, 'info');
+                        
+                        // 检查是否真的有回复内容
+                        let hasReplyContent = false;
+                        if (Array.isArray(responseData.responseData)) {
+                            for (const node of responseData.responseData) {
+                                if (node && (node.textOutput || node.loopOutputValue)) {
+                                    hasReplyContent = true;
+                                    addLog(`✅ 确认有回复内容来自: ${node.moduleName}`, 'success');
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (hasReplyContent) {
+                            addLog(`🚨 逻辑修正：既然有回复内容，将isTimeUp修正为true`, 'warning');
+                            isTimeUp = true;
+                            foundSource += ' (已修正)';
+                        }
+                    }
+                    
+                    addLog(`🎯 第一次请求isTimeUp最终值: ${isTimeUp} (来源: ${foundSource})`, 'success');
+                    
+                    // 🚨 核心逻辑
+                    if (isTimeUp === true) {
+                        // 时间已到，只有一次回复，不启动第二次请求
+                        addLog(`⏰ ✅ isTimeUp=true，时间已到，只有一次回复`, 'success');
+                        hasReceivedResponse = true;
+                        
+                        // 清除可能存在的定时器
+                        if (timeoutTimer) {
+                            clearTimeout(timeoutTimer);
+                            timeoutTimer = null;
+                            addLog(`🗑️ 清除定时器`, 'info');
+                        }
+                        
+                    } else if (isTimeUp === false) {
+                        // 时间未到，启动定时任务，等待第二次请求
+                        addLog(`⏰ ⏳ isTimeUp=false，时间未到，启动定时任务`, 'info');
+                        
+                        if (currentReadTime !== null && currentReadTime > 0) {
+                            startDelayedSecondRequest();
+                        } else {
+                            addLog(`❌ 未获取到read_time，无法启动定时任务`, 'warning');
+                            hasReceivedResponse = true;
+                        }
+                        
+                    } else {
+                        // isTimeUp未定义，安全起见只有一次回复
+                        addLog(`⚠️ 无法获取isTimeUp状态 (值为${isTimeUp})，安全起见只有一次回复`, 'warning');
+                        hasReceivedResponse = true;
+                    }
+                    
+                } catch (error) {
+                    addLog(`❌ 检查isTimeUp失败: ${error.message}`, 'error');
+                    hasReceivedResponse = true;
+                }
+            }
+            
+            // 🔧 新增：处理emoji和特殊字符的函数
+            function processEmojiAndText(text) {
+                if (!text || typeof text !== 'string') {
+                    return text;
+                }
+                
+                const originalText = text;
+                let processedCount = 0;
+                
+                // 🔧 处理引用格式的emoji，如 [682b4ff2e334c475dc1abda5](CITE)
+                text = text.replace(/\[([a-f0-9]+)\]\(CITE\)/g, (match, emojiCode) => {
+                    processedCount++;
+                    addLog(`🎭 检测到emoji编码: [${emojiCode}](CITE)`, 'info');
+                    
+                    // 将16进制编码转换为emoji（如果是有效的unicode）
+                    try {
+                        // 如果是32位hex，尝试转换为emoji
+                        if (emojiCode.length >= 8) {
+                            const codePoint = parseInt(emojiCode.substring(0, 8), 16);
+                            if (codePoint > 0x1F000 && codePoint < 0x1FFFF) {
+                                const emoji = String.fromCodePoint(codePoint);
+                                addLog(`🎭 转换为unicode emoji: ${emoji}`, 'success');
+                                return emoji;
+                            }
+                        }
+                        // 特殊处理：根据hex code的特征返回相应emoji
+                        const firstChars = emojiCode.substring(0, 4).toLowerCase();
+                        const emojiMapping = {
+                            '682b': '😊', // 笑脸
+                            '1f60': '😊', // 各种笑脸
+                            '1f44': '👍', // 赞
+                            '1f49': '💰', // 钱袋
+                            '1f91': '🤝', // 握手
+                            '1f68': '🚀', // 火箭
+                            '2728': '✨', // 星星
+                            '1f52': '🔥'  // 火
+                        };
+                        
+                        for (const [key, emoji] of Object.entries(emojiMapping)) {
+                            if (emojiCode.startsWith(key)) {
+                                addLog(`🎭 映射到预设emoji: ${emoji} (匹配${key})`, 'success');
+                                return emoji;
+                            }
+                        }
+                        
+                        // 如果不匹配，返回默认表情
+                        addLog(`🎭 使用默认emoji: 😊`, 'info');
+                        return '😊';
+                    } catch (error) {
+                        addLog(`🎭 emoji转换失败，使用默认: 😊`, 'warning');
+                        return '😊'; // 默认表情
+                    }
+                });
+                
+                // 🔧 处理其他可能的emoji格式
+                // 处理 :emoji_name: 格式
+                const emojiMap = {
+                    ':smile:': '😊',
+                    ':grin:': '😁',
+                    ':laughing:': '😄',
+                    ':thumbs_up:': '👍',
+                    ':thumbsup:': '👍',
+                    ':heart:': '❤️',
+                    ':fire:': '🔥',
+                    ':star:': '⭐',
+                    ':rocket:': '🚀',
+                    ':money:': '💰',
+                    ':moneybag:': '💰',
+                    ':handshake:': '🤝',
+                    ':success:': '✅',
+                    ':check:': '✅',
+                    ':warning:': '⚠️',
+                    ':sparkles:': '✨',
+                    ':clap:': '👏',
+                    ':wave:': '👋',
+                    ':100:': '💯'
+                };
+                
+                Object.keys(emojiMap).forEach(key => {
+                    if (text.includes(key)) {
+                        text = text.replace(new RegExp(key, 'g'), emojiMap[key]);
+                        processedCount++;
+                        addLog(`🎭 转换emoji代码: ${key} → ${emojiMap[key]}`, 'success');
+                    }
+                });
+                
+                // 🔧 处理unicode转义序列，如 \uXXXX
+                text = text.replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
+                    try {
+                        processedCount++;
+                        const emoji = String.fromCharCode(parseInt(code, 16));
+                        addLog(`🎭 转换unicode转义: ${match} → ${emoji}`, 'success');
+                        return emoji;
+                    } catch (error) {
+                        return match;
+                    }
+                });
+                
+                // 🔍 记录处理结果
+                if (processedCount > 0) {
+                    addLog(`🎭 emoji处理完成，共处理${processedCount}个表情符号`, 'success');
+                    addLog(`🎭 处理前: ${originalText.substring(0, 50)}...`, 'info');
+                    addLog(`🎭 处理后: ${text.substring(0, 50)}...`, 'success');
+                }
+                
+                return text;
+            }
+            
+            // 启动延迟的第二次请求
+            function startDelayedSecondRequest() {
+                // 检查是否已获取到真实的read_time
+                if (currentReadTime === null) {
+                    addLog(`❌ 无法启动定时任务：尚未从API获取到read_time变量`, 'error');
+                    return;
+                }
+                
+                // 清除之前的定时器
+                if (timeoutTimer) {
+                    clearTimeout(timeoutTimer);
+                    timeoutTimer = null;
+                }
+                
+                isReading = true;
+                readingStartTime = Date.now();
+                
+                // 定时任务延迟时间 = read_time + 1秒
+                const delayTime = currentReadTime + 1000;
+                
+                addLog(`📖 启动定时任务，${delayTime}ms (${currentReadTime}ms + 1秒) 后将发送第二次请求`, 'info');
+                
+                timeoutTimer = setTimeout(() => {
+                    addLog(`⏰ [定时器触发] 开始发送第二次请求`, 'success');
+                    
+                    // 检查状态
+                    if (hasReceivedResponse) {
+                        addLog(`🛑 第一次请求已标记为isTimeUp=true，取消第二次请求`, 'success');
+                        isReading = false;
+                        timeoutTimer = null;
+                        return;
+                    }
+                    
+                    if (messageHistory.length === 0) {
+                        addLog(`❌ 消息历史已被清空，无法执行第二次请求`, 'error');
+                        isReading = false;
+                        timeoutTimer = null;
+                        return;
+                    }
+                    
+                    // 执行第二次请求
+                    addLog(`⏰ ✅ 执行第二次请求`, 'success');
+                    isReading = false;
+                    isSecondRequest = true;
+                    timeoutTimer = null;
+                    processMessages(true); // true表示第二次请求
+                }, delayTime);
+            }
+            
+            // 初始化
+            addLog('�� 营销智能体测试页面加载完成 v2.12', 'info');
+            addLog(`⚠️ 重要提示：阅读时间将从第一次API请求的read_time变量中获取，请确保工作流配置正确`, 'warning');
+            addLog(`🔧 v2.12简化版：移除时间和消息数阈值配置，专注核心双请求逻辑`, 'success');
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastGPT增强回复插件测试</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f9fb;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #2196F3;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .panel {
+            margin-bottom: 20px;
+        }
+        .panel-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1976D2;
+        }
+        .input-area {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .input-area textarea {
+            flex: 1;
+            height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .output-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            min-height: 300px;
+            padding: 15px;
+            background: #f9f9f9;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .response-block {
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s;
+        }
+        .segment {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s;
+        }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            background: #2196F3;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            opacity: 0.4;
+            animation: pulse 1s infinite;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        .config-panel {
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .config-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .config-label {
+            width: 180px;
+            padding-right: 10px;
+        }
+        .config-value {
+            flex: 1;
+        }
+        .config-value input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .response-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .switch-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            margin-left: 10px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        .api-url {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        pre {
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FastGPT增强回复插件测试</h1>
+        
+        <div class="panel">
+            <div class="panel-title">使用提示</div>
+            <div style="background-color: #e8f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.5;">
+                <p><strong>使用说明：</strong></p>
+                <ol>
+                    <li>如使用FastGPT API，请输入您的API密钥和插件ID</li>
+                    <li>如使用本地服务器，请先启动 <code>python demo_server.py</code>，然后切换到本地服务器模式</li>
+                    <li>输入测试文本后点击"发送请求"，系统将分段显示模拟人类思考和输入的回复</li>
+                    <li>分段显示模式会自动计算合理的思考时间和打字速度，使AI回复更自然</li>
+                </ol>
+                <p><strong>常见问题：</strong></p>
+                <ul>
+                    <li>"Failed to fetch"错误通常表示CORS问题或本地服务器未启动</li>
+                    <li>"messages is empty"错误通常需要检查API请求格式是否正确</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">配置信息</div>
+            <div class="config-panel">
+                <div class="config-row">
+                    <div class="config-label">API密钥:</div>
+                    <div class="config-value">
+                        <input type="text" id="api-key" placeholder="输入您的FastGPT API密钥">
+                    </div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">插件/模型ID:</div>
+                    <div class="config-value">
+                        <input type="text" id="model-id" placeholder="输入您的增强回复插件ID" value="增强回复插件">
+                    </div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">API服务地址:</div>
+                    <div class="config-value">
+                        <input type="text" id="api-url" placeholder="API URL" value="https://api.fastgpt.in/api/v1/chat/completions">
+                    </div>
+                </div>
+                <div class="switch-container">
+                    <span>启用分段显示:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="segment-display" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="switch-container">
+                    <span>使用本地服务器:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="use-local-server">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">输入测试文本</div>
+            <div class="input-area">
+                <textarea id="input-text" placeholder="输入您想要测试的问题，例如:'请介绍贵公司的主要项目和投资方向'"></textarea>
+            </div>
+            <div class="button-container">
+                <button id="send-button">发送请求</button>
+                <button id="clear-button">清空结果</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">响应结果</div>
+            <div class="output-container" id="output-container"></div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">API响应详情</div>
+            <pre id="api-response">等待请求...</pre>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        const apiKeyInput = document.getElementById('api-key');
+        const modelIdInput = document.getElementById('model-id');
+        const apiUrlInput = document.getElementById('api-url');
+        const segmentDisplayToggle = document.getElementById('segment-display');
+        const useLocalServerToggle = document.getElementById('use-local-server');
+        const inputText = document.getElementById('input-text');
+        const sendButton = document.getElementById('send-button');
+        const clearButton = document.getElementById('clear-button');
+        const outputContainer = document.getElementById('output-container');
+        const apiResponseContainer = document.getElementById('api-response');
+        
+        // 保存API密钥到localStorage
+        if (localStorage.getItem('fastgpt-api-key')) {
+            apiKeyInput.value = localStorage.getItem('fastgpt-api-key');
+        }
+        
+        apiKeyInput.addEventListener('change', () => {
+            localStorage.setItem('fastgpt-api-key', apiKeyInput.value);
+        });
+        
+        // 发送请求
+        sendButton.addEventListener('click', async () => {
+            const apiKey = apiKeyInput.value.trim();
+            const modelId = modelIdInput.value.trim();
+            const apiUrl = apiUrlInput.value.trim();
+            const text = inputText.value.trim();
+            const useSegmentDisplay = segmentDisplayToggle.checked;
+            const useLocalServer = useLocalServerToggle.checked;
+            
+            if (!apiKey) {
+                alert('请输入API密钥');
+                return;
+            }
+            
+            if (!text) {
+                alert('请输入测试文本');
+                return;
+            }
+            
+            try {
+                sendButton.disabled = true;
+                outputContainer.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+                apiResponseContainer.textContent = '正在请求...';
+                
+                let data;
+                
+                if (useLocalServer) {
+                    // 使用本地服务器
+                    try {
+                        const localServerUrl = 'http://localhost:5001/api/questions';
+                        const questionResponse = await fetch(localServerUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                text: text,
+                                chatId: Date.now().toString(),
+                                messages: [
+                                    {
+                                        role: 'user',
+                                        content: text
+                                    }
+                                ],
+                                stream: false
+                            })
+                        });
+                        
+                        if (!questionResponse.ok) {
+                            throw new Error(`HTTP error! Status: ${questionResponse.status} ${await questionResponse.text()}`);
+                        }
+                        
+                        const result = await questionResponse.json();
+                        apiResponseContainer.textContent = JSON.stringify(result, null, 2);
+                        
+                        if (result.request_id) {
+                            // 轮询获取分段回复
+                            await pollLocalServer(result.request_id);
+                        } else {
+                            outputContainer.innerHTML = `<div class="segment">获取请求ID失败: ${JSON.stringify(result)}</div>`;
+                        }
+                    } catch (error) {
+                        console.error('Local server error:', error);
+                        outputContainer.innerHTML = `<div class="segment">本地服务器错误: ${error.message}</div>`;
+                        apiResponseContainer.textContent = `本地服务器错误: ${error.message}`;
+                    }
+                } else {
+                    // 使用FastGPT API
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: modelId,
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: text
+                                }
+                            ],
+                            text: text,
+                            stream: false
+                        })
+                    });
+                    
+                    data = await response.json();
+                    apiResponseContainer.textContent = JSON.stringify(data, null, 2);
+                    
+                    // 清空输出容器
+                    outputContainer.innerHTML = '';
+                    
+                    // 显示响应结果
+                    if (useSegmentDisplay && data.unifiedResponse && data.unifiedResponse.responseType === 'queue') {
+                        // 分段显示
+                        displaySegmentedResponse(data);
+                    } else {
+                        // 一次性显示
+                        displayFullResponse(data);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                outputContainer.innerHTML = `<div class="segment">错误: ${error.message}</div>`;
+                apiResponseContainer.textContent = `请求失败: ${error.message}`;
+            } finally {
+                sendButton.disabled = false;
+            }
+        });
+        
+        // 轮询本地服务器获取分段回复
+        async function pollLocalServer(requestId) {
+            outputContainer.innerHTML = '';
+            let isCompleted = false;
+            let segments = [];
+            
+            // 添加响应信息
+            const responseInfo = document.createElement('div');
+            responseInfo.className = 'response-info';
+            responseInfo.textContent = `使用本地服务器 - 请求ID: ${requestId}`;
+            outputContainer.appendChild(responseInfo);
+            
+            // 显示打字指示器
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            outputContainer.appendChild(typingIndicator);
+            
+            let pollCount = 0;
+            const maxPolls = 30; // 最大轮询次数
+            
+            while (!isCompleted && pollCount < maxPolls) {
+                try {
+                    const response = await fetch(`http://localhost:5001/api/responses/${requestId}`, {
+                        method: 'GET'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // 如果有新的段落
+                    if (data.segment) {
+                        // 移除打字指示器
+                        if (typingIndicator.parentNode) {
+                            typingIndicator.parentNode.removeChild(typingIndicator);
+                        }
+                        
+                        // 添加新段落
+                        addSegment(data.segment, segments.length);
+                        segments.push(data.segment);
+                        
+                        // 如果不是最后一个段落，显示新的打字指示器
+                        if (!data.is_last) {
+                            const newTypingIndicator = document.createElement('div');
+                            newTypingIndicator.className = 'typing-indicator';
+                            newTypingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                            outputContainer.appendChild(newTypingIndicator);
+                        }
+                        
+                        // 如果是最后一个段落，标记完成
+                        if (data.is_last) {
+                            isCompleted = true;
+                        }
+                    } else if (data.status === 'completed') {
+                        // 所有段落已获取完毕
+                        isCompleted = true;
+                        
+                        // 移除打字指示器
+                        if (typingIndicator.parentNode) {
+                            typingIndicator.parentNode.removeChild(typingIndicator);
+                        }
+                    }
+                    
+                    // 更新轮询计数
+                    pollCount++;
+                    
+                    // 如果未完成，等待一段时间再次轮询
+                    if (!isCompleted) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                } catch (error) {
+                    console.error('Error polling:', error);
+                    
+                    // 移除打字指示器
+                    if (typingIndicator.parentNode) {
+                        typingIndicator.parentNode.removeChild(typingIndicator);
+                    }
+                    
+                    addSegment(`轮询错误: ${error.message}`, segments.length);
+                    break;
+                }
+            }
+            
+            // 轮询结束后，移除任何残留的打字指示器
+            const remainingIndicators = outputContainer.querySelectorAll('.typing-indicator');
+            remainingIndicators.forEach(indicator => {
+                indicator.parentNode.removeChild(indicator);
+            });
+            
+            // 如果达到最大轮询次数但未完成
+            if (!isCompleted) {
+                addSegment('轮询超时，请刷新页面重试', segments.length);
+            }
+        }
+        
+        // 清空结果
+        clearButton.addEventListener('click', () => {
+            outputContainer.innerHTML = '';
+            apiResponseContainer.textContent = '等待请求...';
+        });
+        
+        // 分段显示响应
+        function displaySegmentedResponse(data) {
+            if (!data.unifiedResponse || data.unifiedResponse.responseType !== 'queue') {
+                displayFullResponse(data);
+                return;
+            }
+            
+            const segments = data.unifiedResponse.data.messages;
+            if (!segments || !segments.length) {
+                outputContainer.innerHTML = '<div class="segment">无响应段落</div>';
+                return;
+            }
+            
+            // 添加响应信息
+            const responseInfo = document.createElement('div');
+            responseInfo.className = 'response-info';
+            responseInfo.textContent = `分段回复：共 ${segments.length} 个段落，总延迟 ${data.unifiedResponse.data.totalDelay}ms`;
+            outputContainer.appendChild(responseInfo);
+            
+            // 逐段显示
+            segments.forEach((segment, index) => {
+                setTimeout(() => {
+                    // 先显示打字指示器
+                    if (index > 0) {
+                        const typingIndicator = document.createElement('div');
+                        typingIndicator.className = 'typing-indicator';
+                        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                        outputContainer.appendChild(typingIndicator);
+                        
+                        // 模拟打字时间 - 基于内容长度计算
+                        const typingTime = Math.min(2000, segment.content.length * 15);
+                        
+                        setTimeout(() => {
+                            // 移除打字指示器
+                            outputContainer.removeChild(typingIndicator);
+                            
+                            // 显示段落
+                            addSegment(segment.content, index);
+                            
+                            // 滚动到底部
+                            outputContainer.scrollTop = outputContainer.scrollHeight;
+                        }, typingTime);
+                    } else {
+                        // 第一段直接显示
+                        addSegment(segment.content, index);
+                    }
+                }, segment.delay);
+            });
+        }
+        
+        // 一次性显示完整响应
+        function displayFullResponse(data) {
+            let content = '';
+            
+            // 尝试从不同位置获取内容
+            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                content = data.choices[0].message.content;
+            } else if (data.outputText) {
+                content = data.outputText;
+            } else {
+                content = JSON.stringify(data);
+            }
+            
+            addSegment(content, 0);
+        }
+        
+        // 添加段落到输出区域
+        function addSegment(content, index) {
+            const segmentElement = document.createElement('div');
+            segmentElement.className = 'segment';
+            segmentElement.innerHTML = formatText(content);
+            
+            const responseBlock = document.createElement('div');
+            responseBlock.className = 'response-block';
+            responseBlock.appendChild(segmentElement);
+            
+            outputContainer.appendChild(responseBlock);
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
+        
+        // 格式化文本，处理换行和链接
+        function formatText(text) {
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        }
+    </script>
+</body>
+</html>

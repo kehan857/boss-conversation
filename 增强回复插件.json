@@ -1,0 +1,42 @@
+﻿{
+  "pluginId": "增强回复插件",
+  "version": "1.0.0",
+  "name": "增强回复插件",
+  "description": "将长文本分段处理，添加适当的格式化和表情，生成更易读的回复",
+  "inputs": {
+    "origiResponse": {
+      "type": "string",
+      "title": "原始回复",
+      "description": "需要处理的原始文本内容"
+    },
+    "SegmentLength": {
+      "type": "number",
+      "title": "分段长度",
+      "description": "每段的最大字符数",
+      "default": 150
+    },
+    "accumulatedDelay": {
+      "type": "number",
+      "title": "延迟时间",
+      "description": "每段显示的延迟时间(毫秒)",
+      "default": 2000
+    }
+  },
+  "outputs": {
+    "outputText": {
+      "type": "array",
+      "title": "分段后的文本",
+      "description": "分段且格式化后的文本数组"
+    },
+    "accumulatedDelay": {
+      "type": "number",
+      "title": "延迟时间",
+      "description": "每段显示的延迟时间(毫秒)"
+    }
+  },
+  "implementation": {
+    "process": {
+      "function": "async (inputs) => { const { origiResponse, SegmentLength, accumulatedDelay } = inputs; function segmentText(text, maxLength) { if (text.length <= maxLength) { return [text]; } const segments = []; let currentSegment = ''; const sentences = text.split(/([。！？.!?])/); for (let i = 0; i < sentences.length; i += 2) { const sentence = sentences[i] + (sentences[i + 1] || ''); if (currentSegment.length + sentence.length > maxLength && currentSegment.length > 0) { segments.push(currentSegment); currentSegment = sentence; } else { currentSegment += sentence; } } if (currentSegment.length > 0) { segments.push(currentSegment); } return segments; } function formatText(segments) { const emojis = ['😊', '👍', '✨', '🔍', '📝', '💡', '🌟', '📊', '🎯', '🚀']; const formattedSegments = segments.map((segment, index) => { const emoji = emojis[Math.floor(Math.random() * emojis.length)]; if (index === 0) { return `${emoji} ${segment}`; } else if (index === segments.length - 1) { return `${emoji} ${segment}`; } else { return `${emoji} ${segment}`; } }); return formattedSegments; } const segments = segmentText(origiResponse, SegmentLength); const formattedSegments = formatText(segments); return { outputText: formattedSegments, accumulatedDelay: accumulatedDelay }; }"
+    }
+  }
+}

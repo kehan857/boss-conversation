@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多消息汇总测试</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            max-width: 80%;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #007AFF;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        .ai-message {
+            background-color: #E5E5EA;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: white;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 0 20px;
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+        .status-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .status-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .status-value {
+            color: #007AFF;
+            font-family: monospace;
+        }
+        .loading {
+            text-align: center;
+            color: #888;
+            margin: 10px 0;
+            font-style: italic;
+        }
+        .config-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .config-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .config-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+        .config-item label {
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+        .config-item input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .api-selector {
+            margin-bottom: 15px;
+        }
+        .api-selector select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .message-time {
+            font-size: 11px;
+            color: #888;
+            margin-top: 5px;
+            text-align: right;
+        }
+        .user-message .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <h1>多消息汇总测试</h1>
+    
+    <div class="config-container">
+        <div class="config-title">配置项</div>
+        <div class="api-selector">
+            <label for="api-type">API类型：</label>
+            <select id="api-type">
+                <option value="direct-plugin">直接插件API</option>
+                <option value="workflow">工作流API</option>
+            </select>
+        </div>
+        <div class="config-form">
+            <div class="config-item">
+                <label for="time-threshold">时间阈值（毫秒）：</label>
+                <input type="number" id="time-threshold" value="5000" min="1000" step="500">
+            </div>
+            <div class="config-item">
+                <label for="message-threshold">消息数阈值：</label>
+                <input type="number" id="message-threshold" value="10" min="2" step="1">
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input id="message-input" type="text" placeholder="输入消息..." autocomplete="off">
+            <button id="send-button">发送</button>
+        </div>
+    </div>
+
+    <div class="status-container">
+        <div class="status-item">
+            <span class="status-label">消息历史缓存数：</span>
+            <span id="message-count" class="status-value">0</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">上次消息时间：</span>
+            <span id="last-message-time" class="status-value">-</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">时间间隔：</span>
+            <span id="time-difference" class="status-value">-</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">当前状态：</span>
+            <span id="current-status" class="status-value">等待用户输入</span>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const messageCountElement = document.getElementById('message-count');
+        const lastMessageTimeElement = document.getElementById('last-message-time');
+        const timeDifferenceElement = document.getElementById('time-difference');
+        const currentStatusElement = document.getElementById('current-status');
+        const apiTypeSelect = document.getElementById('api-type');
+        const timeThresholdInput = document.getElementById('time-threshold');
+        const messageThresholdInput = document.getElementById('message-threshold');
+
+        // 状态变量
+        let messageHistory = [];
+        let lastMessageTime = 0;
+        let messageCount = 0;
+        let isWaitingForResponse = false;
+
+        // 配置参数
+        let timeThreshold = 5000;
+        let messageThreshold = 10;
+
+        // 初始化
+        function initialize() {
+            timeThreshold = parseInt(timeThresholdInput.value);
+            messageThreshold = parseInt(messageThresholdInput.value);
+            
+            // 监听配置变更
+            timeThresholdInput.addEventListener('change', () => {
+                timeThreshold = parseInt(timeThresholdInput.value);
+            });
+            
+            messageThresholdInput.addEventListener('change', () => {
+                messageThreshold = parseInt(messageThresholdInput.value);
+            });
+
+            // 发送按钮点击事件
+            sendButton.addEventListener('click', sendMessage);
+            
+            // 输入框回车事件
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isWaitingForResponse) return;
+            
+            // 清空输入框
+            messageInput.value = '';
+            
+            // 添加用户消息到界面
+            const currentTime = Date.now();
+            addMessage(message, 'user', currentTime);
+            
+            // 计算时间差
+            const timeDifference = lastMessageTime > 0 ? currentTime - lastMessageTime : 0;
+            
+            // 添加消息到历史
+            messageHistory.push(message);
+            messageCount++;
+            
+            // 更新状态显示
+            updateStatus(currentTime, timeDifference);
+            
+            // 根据插件逻辑判断是否应该回复
+            const shouldReply = (timeDifference > timeThreshold && messageHistory.length > 0) || 
+                               (messageCount >= messageThreshold);
+            
+            // 如果应该回复，调用API
+            if (shouldReply) {
+                await processReply();
+            }
+            
+            // 不管是否回复，都更新最后消息时间
+            lastMessageTime = currentTime;
+        }
+
+        // 处理回复
+        async function processReply() {
+            isWaitingForResponse = true;
+            currentStatusElement.textContent = '正在请求AI回复...';
+            
+            try {
+                const apiType = apiTypeSelect.value;
+                
+                if (apiType === 'direct-plugin') {
+                    await callPluginAPI();
+                } else {
+                    await callWorkflowAPI();
+                }
+                
+                // 重置消息历史和计数
+                messageHistory = [];
+                messageCount = 0;
+                updateStatus(lastMessageTime, 0);
+                
+            } catch (error) {
+                console.error('API请求错误:', error);
+                addMessage('抱歉，请求出错，请重试', 'ai');
+            } finally {
+                isWaitingForResponse = false;
+                currentStatusElement.textContent = '等待用户输入';
+            }
+        }
+
+        // 调用插件API
+        async function callPluginAPI() {
+            // 显示加载消息
+            const loadingId = showLoading();
+            
+            try {
+                const combinedMessage = messageHistory.join('\n\n');
+                
+                // 正确构造请求体，不要嵌套inputs对象
+                const requestBody = {
+                    userMessage: combinedMessage,
+                    messageHistory: [],
+                    lastMessageTime: lastMessageTime,
+                    messageThreshold: messageThreshold,
+                    timeThreshold: timeThreshold,
+                    messageCount: 0
+                };
+                
+                console.log('插件API请求:', requestBody);
+                
+                const response = await fetch('/api/v1/plugin/多消息汇总插件/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                // 更详细的错误处理
+                if (!response.ok) {
+                    let errorInfo = '';
+                    try {
+                        const errorData = await response.json();
+                        errorInfo = JSON.stringify(errorData);
+                    } catch (e) {
+                        errorInfo = await response.text();
+                    }
+                    console.error('插件API错误:', errorInfo);
+                    throw new Error(`插件API调用失败: ${errorInfo}`);
+                }
+                
+                const data = await response.json();
+                console.log('插件API响应:', data);
+                
+                // 使用实际的响应数据
+                if (data && data.success) {
+                    const result = data.outputs;
+                    removeLoading(loadingId);
+                    addMessage(`处理结果: ${result.shouldReply ? '需要回复' : '不需回复'}, 合并了${messageHistory.length}条消息。`, 'ai');
+                } else {
+                    // 模拟AI回复
+                    setTimeout(() => {
+                        removeLoading(loadingId);
+                        addMessage(`我已收到您的消息，包含${messageHistory.length}条内容。`, 'ai');
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                console.error('处理请求错误:', error);
+                removeLoading(loadingId);
+                addMessage(`请求出错: ${error.message}`, 'ai');
+                throw error;
+            }
+        }
+
+        // 调用工作流API
+        async function callWorkflowAPI() {
+            // 显示加载消息
+            const loadingId = showLoading();
+            
+            try {
+                const combinedMessage = messageHistory.join('\n\n');
+                
+                const response = await fetch('/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: combinedMessage
+                            }
+                        ],
+                        model: '多消息汇总销售智能体'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('工作流API调用失败');
+                }
+                
+                const data = await response.json();
+                
+                // 模拟AI回复
+                setTimeout(() => {
+                    removeLoading(loadingId);
+                    addMessage(`这是对您${messageHistory.length}条消息的综合回复。`, 'ai');
+                }, 1000);
+                
+            } catch (error) {
+                removeLoading(loadingId);
+                throw error;
+            }
+        }
+
+        // 添加消息到聊天界面
+        function addMessage(content, sender, timestamp = Date.now()) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            
+            // 消息内容
+            messageElement.innerText = content;
+            
+            // 添加时间戳
+            const timeElement = document.createElement('div');
+            timeElement.classList.add('message-time');
+            const timeString = new Date(timestamp).toLocaleTimeString();
+            timeElement.innerText = timeString;
+            messageElement.appendChild(timeElement);
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 显示加载中消息
+        function showLoading() {
+            const loadingId = 'loading-' + Date.now();
+            const loadingElement = document.createElement('div');
+            loadingElement.id = loadingId;
+            loadingElement.classList.add('loading');
+            loadingElement.innerText = '正在思考...';
+            chatMessages.appendChild(loadingElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return loadingId;
+        }
+
+        // 移除加载中消息
+        function removeLoading(loadingId) {
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        // 更新状态显示
+        function updateStatus(currentTime, timeDifference) {
+            messageCountElement.textContent = messageCount;
+            lastMessageTimeElement.textContent = new Date(currentTime).toLocaleTimeString();
+            timeDifferenceElement.textContent = timeDifference > 0 ? `${timeDifference}ms` : '-';
+            
+            const remainingTime = timeThreshold - timeDifference;
+            const remainingMessages = messageThreshold - messageCount;
+            
+            if (messageCount === 0) {
+                currentStatusElement.textContent = '等待用户输入';
+            } else if (isWaitingForResponse) {
+                currentStatusElement.textContent = '正在请求AI回复...';
+            } else {
+                currentStatusElement.textContent = `等待中 (还需${remainingMessages}条消息或${Math.max(0, Math.floor(remainingTime/1000))}秒后回复)`;
+            }
+        }
+
+        // 初始化应用
+        initialize();
+    </script>
+</body>
+</html> 
