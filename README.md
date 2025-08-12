@@ -1,155 +1,70 @@
-# FastGPT 销售智能体增强工具集
+# FastGPT 对话演示
 
-本项目提供了一套为FastGPT销售智能体设计的增强工具，旨在提升AI销售助手的用户交互体验和功能表现。目前包含两个主要组件：
+一个基于 FastGPT API 的简洁对话界面，支持与 AI 智能体进行多轮对话。
 
-## 1. 增强回复插件
+## 功能特点
 
-增强回复插件通过处理AI回复内容，实现分段输出、格式优化和表情增强等功能，让销售机器人的回复更加自然、易读且有人情味。
+- 🤖 基于 FastGPT API 的智能对话
+- 💬 支持多轮对话，保持上下文
+- 🎨 简洁现代的深色主题界面
+- ⌨️ 支持回车发送，Shift+Enter 换行
+- 🔄 一键清空对话历史
+- 💾 自动保存 API Key 到本地存储
 
-### 主要特性：
-- 文本分段处理：将长文本按照合理长度分段，便于用户阅读
-- 每段延迟显示：模拟人类打字速度，逐段展示内容
-- 格式优化：支持添加表情和格式化，增强可读性
+## 在线预览
 
-### 测试工具：
-- `enhanced_response_test.html`：测试增强回复插件的效果
-- 支持调整分段长度和延迟时间
+访问 [GitHub Pages 预览](https://kehan857.github.io/boss-conversation/fastgpt_chat.html)
 
-## 2. 多消息汇总插件
+## 本地运行
 
-多消息汇总插件解决了传统聊天中用户连续发送多条消息被AI频繁打断的问题，通过智能判断用户输入模式，在短时间内汇总用户的多条消息，待用户输入完成后再统一回复。
+### 方法一：直接打开
+1. 下载 `fastgpt_chat.html` 文件
+2. 在浏览器中直接打开
+3. 在控制台设置 API Key：
+   ```javascript
+   localStorage.setItem('fastgpt_api_key', '你的FastGPT API Key');
+   location.reload();
+   ```
 
-### 主要特性：
-- 时间阈值判断：设定时间窗口（默认5秒），在此窗口内的多条消息被视为持续输入
-- 消息数阈值：设定最大缓存消息数（默认10条），防止过多消息堆积
-- 智能回复触发：当满足触发条件时，将多条消息合并后统一交给AI处理
-
-### 测试工具：
-- `multi_message_test.html`：测试多消息汇总功能的效果
-- 支持调整时间阈值和消息数阈值
-
-## 安装与使用
-
-### 本地测试环境
-
+### 方法二：使用本地代理（推荐）
 1. 安装依赖：
-```bash
-npm install express cors http-proxy-middleware
-```
+   ```bash
+   npm install
+   ```
 
-2. 启动本地代理服务器：
-```bash
-node proxy_server.js
-```
+2. 启动代理服务器：
+   ```bash
+   npm start
+   ```
 
-3. 访问测试页面：
-   - 增强回复测试: http://localhost:3001/enhanced_response_test.html
-   - 多消息汇总测试: http://localhost:3001/multi_message_test.html
+3. 访问：http://localhost:3001/fastgpt_chat.html
 
-### 在FastGPT中使用
+## API Key 配置
 
-1. 直接导入工作流模板：
-   - `增强回复工作流.json` - 用于增强AI回复效果
-   - `多消息汇总工作流.json` - 用于实现多消息汇总功能
+默认已预填 API Key，如需更换：
 
-2. 手动设置（详见各功能的使用指南）：
-   - 创建插件
-   - 构建工作流
-   - 配置参数
+1. 在浏览器控制台执行：
+   ```javascript
+   localStorage.setItem('fastgpt_api_key', '你的新API Key');
+   location.reload();
+   ```
 
-## 文件说明
+2. 或直接修改 `fastgpt_chat.html` 中的默认值
 
-- `proxy_server.js` - 本地代理服务器，用于测试插件功能
-- `增强回复插件.json` - 增强回复插件的配置文件
-- `多消息汇总插件.json` - 多消息汇总插件的配置文件
-- `enhanced_response_test.html` - 增强回复功能测试页面
-- `multi_message_test.html` - 多消息汇总功能测试页面
-- `多消息汇总功能使用指南.md` - 详细的多消息汇总功能使用说明
+## 技术栈
 
-## 技术架构
+- HTML5 + CSS3 + JavaScript
+- FastGPT API
+- GitHub Pages 部署
 
-本项目采用了以下技术：
-- Node.js + Express：构建本地测试服务器
-- FastGPT插件体系：实现功能扩展
-- 原生JavaScript + HTML/CSS：构建测试界面
+## 部署
 
-## 适用场景
+本项目使用 GitHub Actions 自动部署到 GitHub Pages：
 
-这套工具特别适合以下场景：
-- 电商销售机器人
-- 客户服务智能体
-- 咨询顾问机器人
-- 需要自然交互体验的各类对话机器人
+1. 推送代码到 main/master 分支
+2. GitHub Actions 自动构建并部署
+3. 访问 https://kehan857.github.io/boss-conversation/
 
-## 未来计划
+## 许可证
 
-- [ ] 增加更多表情和格式化选项
-- [ ] 支持自定义规则的回复拆分
-- [ ] 增加更多交互模式的支持
-- [ ] 提供更丰富的测试工具和指标
-
-# 营销智能体工作流测试页面
-
-这是一个基于FastGPT工作流的营销智能体测试页面，支持多消息汇总和分段回复功能。
-
-## 🌟 功能特点
-
-- **微信风格聊天界面**：模拟真实微信对话场景
-- **智能消息汇总**：支持按时间或消息数量阈值汇总用户输入
-- **分段回复展示**：AI回复可分段显示，提升用户体验
-- **实时日志监控**：详细的处理过程日志，便于调试
-- **API配置管理**：灵活配置FastGPT API密钥和地址
-
-## 🚀 在线访问
-
-访问GitHub Pages预览：[https://kehan857.github.io/Sales-agent/](https://kehan857.github.io/Sales-agent/)
-
-## 📋 使用说明
-
-### 1. API配置
-- **API密钥**：已预设FastGPT密钥，可自行修改
-- **API地址**：默认为 `https://api.fastgpt.in/api`
-- **时间阈值**：消息汇总的时间间隔（毫秒）
-- **消息数阈值**：触发汇总的消息数量
-
-### 2. 聊天测试
-1. 在聊天输入框中输入消息
-2. 系统会根据设置的阈值自动汇总消息
-3. AI回复支持分段显示
-4. 查看日志了解详细处理过程
-
-### 3. 调试功能
-- **日志面板**：实时显示处理过程
-- **调试信息**：查看请求和响应的详细内容
-- **清空功能**：重置聊天记录和日志
-
-## 🛠️ 技术特性
-
-- **响应式设计**：支持桌面和移动端
-- **错误处理**：完善的错误捕获和提示
-- **实时交互**：支持键盘快捷键操作
-- **微信样式**：真实的微信聊天界面风格
-
-## 📱 界面预览
-
-页面包含以下主要区域：
-- API配置面板
-- 微信风格聊天界面
-- 实时日志显示
-- 调试信息面板
-
-## ⚙️ 部署说明
-
-本页面使用GitHub Pages部署，自动更新。如需本地运行：
-
-1. 克隆仓库：`git clone https://github.com/kehan857/Sales-agent.git`
-2. 打开 `index.html` 文件即可
-
-## 🔗 相关链接
-
-- [FastGPT官网](https://fastgpt.in/)
-- [GitHub仓库](https://github.com/kehan857/Sales-agent)
-
----
-
-*本项目基于FastGPT工作流技术，为营销智能体应用提供测试环境。* 
+MIT License 

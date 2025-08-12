@@ -467,7 +467,7 @@
                 <div class="panel-body">
                     <div class="form-group">
                         <label for="apiKey">API密钥</label>
-                        <input type="text" id="apiKey" value="fastgpt-o1RLNv6G3Bz6d3dm7nLaH4liAexaTKX0MiWxJMsveKgeN6UzcbWfsevL" readonly>
+                        <input type="text" id="apiKey" value="fastgpt-yKhK011KhQZpBKk3xXSmJf6GIPrGKvGKkHfVCrYd6o9nhqSfbiLby640gn8Jot" readonly>
                     </div>
                     <div class="form-group">
                         <label for="apiUrl">API地址</label>
@@ -488,8 +488,10 @@
                     <div class="chat-container">
                         <div id="chatMessages" class="chat-messages">
                         </div>
-                        <div class="chat-input">
-                            <input type="text" id="userInput" placeholder="输入消息..." />
+                        <div class="chat-input" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                            <button id="uploadBtn" type="button" style="border-radius: 20px; padding: 8px 20px; border: 1px solid #1890ff; background: #fff; color: #1890ff; cursor: pointer;">上传图片</button>
+                            <input type="text" id="userInput" placeholder="输入消息..." style="flex:1; margin-right: 10px; border-radius: 20px; border: 1px solid #d0d0d0; padding: 8px 16px; background-color: white; outline: none;">
                             <button id="sendButton">发送</button>
                         </div>
                     </div>
@@ -584,6 +586,7 @@
             let timerInterval = null;
             let timerStartTime = null;
             let hasFoundStreamContent = false; // 全局标记是否已经找到流式内容
+            let picture = '';
             
             // 事件监听器
             userInput.addEventListener('keydown', function(e) {
@@ -690,7 +693,8 @@
                         stream: true,  // 启用FastGPT流式输出
                         detail: true,
                         variables: {
-                            isTimerTriggered: isTimerTriggered
+                            isTimerTriggered: isTimerTriggered,
+                            picture: picture // 添加图片URL到variables中
                         },
                         messages: [{
                             role: "user",
@@ -897,9 +901,28 @@
                     if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
                         const choice = data.choices[0];
                         if (choice.delta && choice.delta.content) {
-                            const content = choice.delta.content;
+                            const content = choice.delta.content.trim();
                             if (content) {
                                 hasStreamContent = true; // 标记发现了流式内容
+                                
+                                // 检查内容是否已经处理过
+                                const contentHash = content.toLowerCase().replace(/\s+/g, ''); // 简单的内容标识
+                                if (processedContents.has(contentHash)) {
+                                    addLog(`⚠️ 检测到重复的流式内容，已跳过: ${content.substring(0, 50)}...`, 'warning');
+                                    return { newReplies: foundReplies, hasStreamContent: true };
+                                }
+                                
+                                processedContents.add(contentHash); // 标记内容已处理
+                                
+                                // 记录发现有效回复的时间
+                                const foundTime = Date.now();
+                                const foundTimeDisplay = new Date().toLocaleTimeString('zh-CN', { hour12: false, fractionalSecondDigits: 3 });
+                                const foundTimeISO = new Date().toISOString();
+                                
+                                addLog(`🎯 [${foundTimeDisplay}] 发现FastGPT流式回复内容`, 'success');
+                                addLog(`⏰ 发现时间: ${foundTimeDisplay} (${foundTimeISO})`, 'info');
+                                addLog(`📝 回复内容: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`, 'info');
+                                addLog(`🔢 选择索引: ${choice.index || 0}`, 'info');
                                 
                                 // 累积流式内容
                                 streamAccumulator += content;
@@ -918,7 +941,10 @@
                                 
                                 foundReplies.push({
                                     content: content,
-                                    accumulated: streamAccumulator,
+                                    foundTime: foundTimeDisplay,
+                                    displayTime: displayTimeDisplay,
+                                    processingDuration: processingDuration,
+                                    totalDuration: totalDuration,
                                     choiceIndex: choice.index || 0,
                                     source: 'stream' // 标记来源为流式输出
                                 });
@@ -1429,6 +1455,30 @@
             addLog('  - 从指定回复节点textOutput获取回复内容', 'info');
             addLog('  - 只发送当前消息，不包含历史消息', 'info');
             addLog('  - 用户新输入会中断当前定时任务', 'info');
+
+            document.getElementById('uploadBtn').onclick = function() {
+                document.getElementById('imageUpload').click();
+            };
+            document.getElementById('imageUpload').addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    // 固定赋值
+                    picture = 'https://picture-share-001-dpxj.oss-cn-beijing.aliyuncs.com/AI%E6%B5%8B%E8%AF%95%E5%9B%BE%E7%89%87.png';
+                    
+                    // 添加日志记录
+                    addLog(`📸 图片已上传: ${picture}`, 'success');
+                    
+                    // 聊天区只插入图片消息，不显示任何文字
+                    const chatMessages = document.querySelector('.chat-messages');
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message message-user';
+                    messageDiv.innerHTML = `
+                        <div class="avatar">用户</div>
+                        <div class="message-content"><img src="${picture}" alt="图片" style="max-width:120px;max-height:120px;border-radius:6px;"></div>
+                    `;
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
         });
     </script>
 </body>

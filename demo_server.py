@@ -351,6 +351,139 @@ def get_chat_history(chat_id):
         'history': conversations[chat_id]
     })
 
+@app.route('/api', methods=['POST'])
+def handle_rewrite_request():
+    """处理文案改写请求"""
+    try:
+        data = request.json
+        
+        if not data:
+            return jsonify({"error": "Missing request data"}), 400
+        
+        # 提取请求参数
+        original_text = data.get('original_text', '')
+        video_duration = data.get('video_duration', 30)
+        rewrite_count = data.get('rewrite_count', 3)
+        rewrite_style = data.get('rewrite_style', '')
+        
+        if not original_text:
+            return jsonify({"error": "Missing original_text"}), 400
+        
+        # 调用FastGPT API生成改写结果
+        results = call_fastgpt_for_rewrite(original_text, video_duration, rewrite_count, rewrite_style)
+        
+        return jsonify({
+            "result": results,
+            "status": "success",
+            "message": f"成功生成{len(results)}个改写版本"
+        })
+        
+    except Exception as e:
+        print(f"Error handling rewrite request: {str(e)}")
+        return jsonify({"error": f"处理请求失败: {str(e)}"}), 500
+
+def call_fastgpt_for_rewrite(original_text, video_duration, rewrite_count, rewrite_style):
+    """调用FastGPT API进行文案改写"""
+    results = []
+    
+    # 构建提示词
+    style_prompts = {
+        'professional': '请用专业正式的语气改写以下文案，保持内容的准确性和权威性：',
+        'casual': '请用轻松活泼的语气改写以下文案，让内容更加亲切自然：',
+        'emotional': '请用富有情感的语气改写以下文案，增强内容的感染力：',
+        'marketing': '请用营销导向的语气改写以下文案，突出产品卖点和价值主张：',
+        '': '请改写以下文案，保持原意的同时让表达更加清晰有力：'
+    }
+    
+    style_prompt = style_prompts.get(rewrite_style, style_prompts[''])
+    
+    for i in range(rewrite_count):
+        try:
+            # 构建完整的提示词
+            prompt = f"""{style_prompt}
+
+原始文案：{original_text}
+
+要求：
+1. 改写后的文案适合{video_duration}秒的视频使用
+2. 保持原意不变，但表达方式要更加吸引人
+3. 内容长度控制在{video_duration * 3}字以内
+4. 这是第{i+1}个改写版本，请确保与之前版本有所区别
+
+请直接输出改写后的文案，不要添加任何解释。"""
+
+            # 调用FastGPT API
+            response = call_fastgpt_api(prompt)
+            
+            if 'choices' in response and response['choices']:
+                rewritten_text = response['choices'][0]['message']['content'].strip()
+                results.append(rewritten_text)
+            else:
+                # 如果API调用失败，使用备用方案
+                fallback_text = generate_fallback_rewrite(original_text, video_duration, i+1, rewrite_style)
+                results.append(fallback_text)
+                
+        except Exception as e:
+            print(f"Error calling FastGPT API for rewrite {i+1}: {str(e)}")
+            # 使用备用方案
+            fallback_text = generate_fallback_rewrite(original_text, video_duration, i+1, rewrite_style)
+            results.append(fallback_text)
+    
+    return results
+
+def generate_fallback_rewrite(original_text, video_duration, version_num, rewrite_style):
+    """生成备用改写文案（当API调用失败时使用）"""
+    style_templates = {
+        'professional': [
+            "基于您提供的原始内容，我们为您精心打造了专业版本：",
+            "经过深度优化，这个版本更加正式和专业：",
+            "针对商务场景，我们特别调整了表达方式："
+        ],
+        'casual': [
+            "轻松活泼的版本，更适合年轻受众：",
+            "这个版本更加亲切自然，拉近与观众的距离：",
+            "用更轻松的方式表达，让内容更有趣："
+        ],
+        'emotional': [
+            "富有情感的版本，更能打动人心：",
+            "加入情感元素，让内容更有感染力：",
+            "这个版本更能引起观众的共鸣："
+        ],
+        'marketing': [
+            "营销导向的版本，突出产品卖点：",
+            "针对转化优化的版本，更有说服力：",
+            "突出价值主张的版本，更有吸引力："
+        ],
+        '': [
+            "改写版本一：",
+            "改写版本二：",
+            "改写版本三："
+        ]
+    }
+    
+    templates = style_templates.get(rewrite_style, style_templates[''])
+    template = templates[(version_num - 1) % len(templates)]
+    
+    # 根据视频时长调整内容长度
+    target_length = video_duration * 3
+    
+    # 简单的改写逻辑
+    if "项目" in original_text or "产品" in original_text:
+        rewritten = f"{template}\n\n{original_text}\n\n这个项目具有以下优势：\n• 技术先进，采用最新AI技术\n• 市场前景广阔，需求量大\n• 团队经验丰富，执行力强\n• 商业模式清晰，盈利能力强"
+    elif "服务" in original_text or "解决方案" in original_text:
+        rewritten = f"{template}\n\n{original_text}\n\n我们的服务特色：\n• 专业团队，经验丰富\n• 定制化方案，满足个性化需求\n• 全程跟踪，确保服务质量\n• 性价比高，投资回报快"
+    else:
+        # 通用改写
+        rewritten = f"{template}\n\n{original_text}\n\n核心亮点：\n• 内容质量高，专业性强\n• 表达清晰，易于理解\n• 针对性强，目标明确\n• 效果显著，价值突出"
+    
+    # 调整长度
+    if len(rewritten) > target_length:
+        rewritten = rewritten[:target_length] + "..."
+    elif len(rewritten) < target_length * 0.8:
+        rewritten += f"\n\n适合{video_duration}秒视频的完整内容，包含详细说明和具体案例。"
+    
+    return rewritten
+
 @app.route('/')
 def index():
     """返回服务状态"""
@@ -360,7 +493,8 @@ def index():
         'endpoints': {
             'submit_question': '/api/questions',
             'get_response': '/api/responses/<request_id>',
-            'get_history': '/api/history/<chat_id>'
+            'get_history': '/api/history/<chat_id>',
+            'rewrite_text': '/api'
         }
     })
 

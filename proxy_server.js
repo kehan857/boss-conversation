@@ -154,6 +154,17 @@ const apiProxy = createProxyMiddleware('/api', {
     if (req.headers.authorization) {
       proxyReq.setHeader('Authorization', req.headers.authorization);
     }
+    // 如果 express.json 已经解析了 body，则需要手动写入到代理请求中
+    if (req.body && Object.keys(req.body).length) {
+      try {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      } catch (e) {
+        console.error('写入代理请求体失败:', e.message);
+      }
+    }
     console.log('代理请求到:', req.method, req.path);
   },
   onProxyRes: (proxyRes, req, res) => {
@@ -172,6 +183,11 @@ app.use('/api', (req, res, next) => {
   } else {
     apiProxy(req, res, next);
   }
+});
+
+// 访问根路径时，重定向到新的对话页面，避免404误导
+app.get('/', (req, res) => {
+  res.redirect('/fastgpt_chat.html');
 });
 
 // 错误处理中间件

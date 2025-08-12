@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI文案改写工具 - 增强版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .toolbar {
+            background: #f8fafc;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .toolbar-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .toolbar-btn:hover {
+            background: #3730a3;
+        }
+
+        .toolbar-btn.secondary {
+            background: #6b7280;
+        }
+
+        .toolbar-btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .output-section {
+            background: #f0fdf4;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #dcfce7;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .results-container.active {
+            display: block;
+        }
+
+        .result-item {
+            background: white;
+            border: 1px solid #d1fae5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .result-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .result-item.selected {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .result-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .result-number {
+            background: #4f46e5;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #059669;
+        }
+
+        .action-btn.like {
+            background: #f59e0b;
+        }
+
+        .action-btn.like:hover {
+            background: #d97706;
+        }
+
+        .action-btn.like.active {
+            background: #dc2626;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .result-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .char-count {
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .history-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .history-panel.active {
+            right: 0;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .history-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: #e2e8f0;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .history-content {
+            font-size: 0.9rem;
+            color: #374151;
+            line-height: 1.4;
+        }
+
+        .export-panel {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .export-panel.active {
+            display: block;
+        }
+
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .export-btn:hover {
+            background: #0284c7;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar-left {
+                justify-content: center;
+            }
+
+            .history-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AI文案改写工具 - 增强版</h1>
+            <p>基于FastGPT的智能文案改写平台，支持历史记录、批量导出等高级功能</p>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button class="toolbar-btn" onclick="showHistory()">📚 历史记录</button>
+                <button class="toolbar-btn" onclick="clearAll()">🗑️ 清空结果</button>
+                <button class="toolbar-btn" onclick="toggleExport()">📥 导出结果</button>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn secondary" onclick="showHelp()">❓ 使用帮助</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 输入区域 -->
+            <div class="input-section">
+                <h2 class="section-title">
+                    📝 文案输入
+                </h2>
+                
+                <form id="rewriteForm">
+                    <div class="form-group">
+                        <label class="form-label" for="originalText">
+                            原始文案 *
+                        </label>
+                        <textarea 
+                            id="originalText" 
+                            name="original_text"
+                            class="form-input form-textarea" 
+                            placeholder="请输入需要改写的原始文案内容..."
+                            required
+                        ></textarea>
+                        <div class="char-count" id="charCount">0 字符</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="videoDuration">
+                                视频时长 (秒) *
+                            </label>
+                            <input 
+                                type="number" 
+                                id="videoDuration" 
+                                name="video_duration"
+                                class="form-input" 
+                                placeholder="30"
+                                min="1"
+                                max="3600"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="rewriteCount">
+                                改写数量 *
+                            </label>
+                            <input 
+                                type="number" 
+                                id="rewriteCount" 
+                                name="rewrite_count"
+                                class="form-input" 
+                                placeholder="3"
+                                min="1"
+                                max="10"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="rewriteStyle">
+                            改写风格
+                        </label>
+                        <select id="rewriteStyle" name="rewrite_style" class="form-select">
+                            <option value="">默认风格</option>
+                            <option value="professional">专业正式</option>
+                            <option value="casual">轻松活泼</option>
+                            <option value="emotional">情感丰富</option>
+                            <option value="marketing">营销导向</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="submit-btn">
+                        🎯 开始改写
+                    </button>
+                </form>
+            </div>
+
+            <!-- 输出区域 -->
+            <div class="output-section">
+                <h2 class="section-title">
+                    ✨ 改写结果
+                </h2>
+
+                <!-- 统计信息 -->
+                <div class="stats" id="statsContainer" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statCount">0</div>
+                        <div class="stat-label">改写数量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statDuration">0s</div>
+                        <div class="stat-label">视频时长</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statTime">0ms</div>
+                        <div class="stat-label">处理时间</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statLiked">0</div>
+                        <div class="stat-label">喜欢数量</div>
+                    </div>
+                </div>
+
+                <!-- 导出面板 -->
+                <div class="export-panel" id="exportPanel">
+                    <h3>📥 导出选项</h3>
+                    <p>选择您需要的导出格式：</p>
+                    <div class="export-options">
+                        <button class="export-btn" onclick="exportResults('txt')">📄 文本文件</button>
+                        <button class="export-btn" onclick="exportResults('json')">📋 JSON格式</button>
+                        <button class="export-btn" onclick="exportResults('csv')">📊 CSV表格</button>
+                    </div>
+                </div>
+
+                <!-- 加载状态 -->
+                <div class="loading" id="loadingContainer">
+                    <div class="spinner"></div>
+                    <p>AI正在努力改写中，请稍候...</p>
+                </div>
+
+                <!-- 结果展示 -->
+                <div class="results-container" id="resultsContainer">
+                    <div id="resultsList">
+                        <!-- 改写结果将在这里显示 -->
+                    </div>
+                </div>
+
+                <!-- 错误信息 -->
+                <div class="error-message" id="errorMessage">
+                    <!-- 错误信息将在这里显示 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史记录面板 -->
+    <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+            <h3>📚 历史记录</h3>
+            <button class="close-btn" onclick="hideHistory()">&times;</button>
+        </div>
+        <div id="historyList">
+            <!-- 历史记录将在这里显示 -->
+        </div>
+    </div>
+
+    <script>
+        class EnhancedRewriteTool {
+            constructor() {
+                // 使用本地demo服务器
+                this.apiUrl = (window.location.hostname === 'localhost' || window.location.protocol === 'file:') 
+                    ? 'http://localhost:5001/api'  // 本地demo服务器
+                    : 'https://api.fastgpt.in/api'; // 直接访问
+                this.apiKey = 'fastgpt-oYYY9DjrMEKE1kLElytP5NTZVpgvnBWG9SYxUVWYOKMq1vWzSPVoeqkOIzRygM';
+                this.currentResults = [];
+                this.likedResults = new Set();
+                this.history = this.loadHistory();
+                this.init();
+            }
+
+            init() {
+                this.form = document.getElementById('rewriteForm');
+                this.submitBtn = document.getElementById('submitBtn');
+                this.loadingContainer = document.getElementById('loadingContainer');
+                this.resultsContainer = document.getElementById('resultsContainer');
+                this.errorMessage = document.getElementById('errorMessage');
+                this.statsContainer = document.getElementById('statsContainer');
+                this.originalTextArea = document.getElementById('originalText');
+                
+                this.bindEvents();
+                this.updateCharCount();
+                this.displayHistory();
+            }
+
+            bindEvents() {
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                });
+
+                // 字符计数
+                this.originalTextArea.addEventListener('input', () => {
+                    this.updateCharCount();
+                });
+
+                // 输入验证
+                const inputs = this.form.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('input', () => {
+                        this.validateInput(input);
+                    });
+                });
+            }
+
+            updateCharCount() {
+                const text = this.originalTextArea.value;
+                const charCount = text.length;
+                document.getElementById('charCount').textContent = `${charCount} 字符`;
+            }
+
+            validateInput(input) {
+                const value = input.value.trim();
+                
+                if (input.name === 'original_text' && value.length < 10) {
+                    input.style.borderColor = '#ef4444';
+                    return false;
+                } else if (input.name === 'video_duration' && (value < 1 || value > 3600)) {
+                    input.style.borderColor = '#ef4444';
+                    return false;
+                } else if (input.name === 'rewrite_count' && (value < 1 || value > 10)) {
+                    input.style.borderColor = '#ef4444';
+                    return false;
+                } else {
+                    input.style.borderColor = '#e5e7eb';
+                    return true;
+                }
+            }
+
+            async handleSubmit() {
+                const formData = new FormData(this.form);
+                const data = {
+                    original_text: formData.get('original_text').trim(),
+                    video_duration: parseInt(formData.get('video_duration')),
+                    rewrite_count: parseInt(formData.get('rewrite_count')),
+                    rewrite_style: formData.get('rewrite_style') || ''
+                };
+
+                // 验证数据
+                if (!this.validateFormData(data)) {
+                    return;
+                }
+
+                this.showLoading(true);
+                this.hideError();
+
+                const startTime = Date.now();
+
+                try {
+                    const result = await this.callFastGPTAPI(data);
+                    const processingTime = Date.now() - startTime;
+                    
+                    this.currentResults = result;
+                    this.displayResults(result, data, processingTime);
+                    this.updateStats(data, processingTime);
+                    this.saveToHistory(data, result, processingTime);
+                    
+                } catch (error) {
+                    console.error('API调用失败:', error);
+                    this.showError('改写失败：' + error.message);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            validateFormData(data) {
+                if (!data.original_text || data.original_text.length < 10) {
+                    this.showError('原始文案内容不能少于10个字符');
+                    return false;
+                }
+
+                if (!data.video_duration || data.video_duration < 1 || data.video_duration > 3600) {
+                    this.showError('视频时长必须在1-3600秒之间');
+                    return false;
+                }
+
+                if (!data.rewrite_count || data.rewrite_count < 1 || data.rewrite_count > 10) {
+                    this.showError('改写数量必须在1-10之间');
+                    return false;
+                }
+
+                return true;
+            }
+
+            async callFastGPTAPI(data) {
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.apiKey}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API请求失败 (${response.status}): ${errorText}`);
+                }
+
+                const result = await response.json();
+                
+                // 验证返回数据格式
+                if (!result.result || !Array.isArray(result.result)) {
+                    throw new Error('API返回数据格式错误');
+                }
+
+                return result.result;
+            }
+
+            displayResults(results, originalData, processingTime) {
+                const resultsList = document.getElementById('resultsList');
+                resultsList.innerHTML = '';
+
+                results.forEach((text, index) => {
+                    const resultItem = this.createResultItem(text, index + 1);
+                    resultsList.appendChild(resultItem);
+                });
+
+                this.resultsContainer.classList.add('active');
+            }
+
+            createResultItem(text, number) {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.setAttribute('data-index', number - 1);
+                
+                item.innerHTML = `
+                    <div class="result-header">
+                        <div class="result-left">
+                            <div class="result-number">${number}</div>
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn like" onclick="toggleLike(${number - 1}, this)">
+                                ❤️ 喜欢
+                            </button>
+                            <button class="action-btn" onclick="copyToClipboard('${this.escapeHtml(text)}', this)">
+                                📋 复制
+                            </button>
+                            <button class="action-btn" onclick="selectResult(${number - 1})">
+                                ✅ 选择
+                            </button>
+                        </div>
+                    </div>
+                    <div class="result-content">${this.escapeHtml(text)}</div>
+                    <div class="result-meta">
+                        <span class="char-count">${text.length} 字符</span>
+                        <span class="created-time">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                `;
+
+                return item;
+            }
+
+            updateStats(data, processingTime) {
+                document.getElementById('statCount').textContent = data.rewrite_count;
+                document.getElementById('statDuration').textContent = data.video_duration + 's';
+                document.getElementById('statTime').textContent = processingTime + 'ms';
+                document.getElementById('statLiked').textContent = this.likedResults.size;
+                this.statsContainer.style.display = 'grid';
+            }
+
+            saveToHistory(data, results, processingTime) {
+                const historyItem = {
+                    id: Date.now(),
+                    timestamp: new Date().toISOString(),
+                    originalText: data.original_text,
+                    videoDuration: data.video_duration,
+                    rewriteCount: data.rewrite_count,
+                    style: data.rewrite_style,
+                    results: results,
+                    processingTime: processingTime
+                };
+
+                this.history.unshift(historyItem);
+                
+                // 保持历史记录数量限制
+                if (this.history.length > 50) {
+                    this.history = this.history.slice(0, 50);
+                }
+
+                this.saveHistory();
+                this.displayHistory();
+            }
+
+            loadHistory() {
+                try {
+                    const saved = localStorage.getItem('rewriteHistory');
+                    return saved ? JSON.parse(saved) : [];
+                } catch (error) {
+                    console.error('加载历史记录失败:', error);
+                    return [];
+                }
+            }
+
+            saveHistory() {
+                try {
+                    localStorage.setItem('rewriteHistory', JSON.stringify(this.history));
+                } catch (error) {
+                    console.error('保存历史记录失败:', error);
+                }
+            }
+
+            displayHistory() {
+                const historyList = document.getElementById('historyList');
+                if (!historyList) return;
+
+                if (this.history.length === 0) {
+                    historyList.innerHTML = '<p style="text-align: center; color: #6b7280;">暂无历史记录</p>';
+                    return;
+                }
+
+                historyList.innerHTML = this.history.map(item => `
+                    <div class="history-item" onclick="loadFromHistory('${item.id}')">
+                        <div class="history-time">${new Date(item.timestamp).toLocaleString()}</div>
+                        <div class="history-content">${item.originalText.substring(0, 100)}${item.originalText.length > 100 ? '...' : ''}</div>
+                        <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 5px;">
+                            ${item.rewriteCount}个改写 • ${item.videoDuration}秒 • ${item.processingTime}ms
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            showLoading(show) {
+                if (show) {
+                    this.loadingContainer.classList.add('active');
+                    this.resultsContainer.classList.remove('active');
+                    this.submitBtn.disabled = true;
+                    this.submitBtn.textContent = '🔄 改写中...';
+                } else {
+                    this.loadingContainer.classList.remove('active');
+                    this.submitBtn.disabled = false;
+                    this.submitBtn.textContent = '🎯 开始改写';
+                }
+            }
+
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.classList.add('active');
+                
+                // 3秒后自动隐藏错误信息
+                setTimeout(() => {
+                    this.hideError();
+                }, 3000);
+            }
+
+            hideError() {
+                this.errorMessage.classList.remove('active');
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        let rewriteTool;
+
+        // 全局函数
+        function toggleLike(index, button) {
+            if (rewriteTool.likedResults.has(index)) {
+                rewriteTool.likedResults.delete(index);
+                button.classList.remove('active');
+                button.innerHTML = '❤️ 喜欢';
+            } else {
+                rewriteTool.likedResults.add(index);
+                button.classList.add('active');
+                button.innerHTML = '💖 已喜欢';
+            }
+            
+            document.getElementById('statLiked').textContent = rewriteTool.likedResults.size;
+        }
+
+        function selectResult(index) {
+            // 移除其他选中状态
+            document.querySelectorAll('.result-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 添加选中状态
+            const resultItem = document.querySelector(`[data-index="${index}"]`);
+            if (resultItem) {
+                resultItem.classList.add('selected');
+            }
+        }
+
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✅ 已复制';
+                button.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#10b981';
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        function showHistory() {
+            document.getElementById('historyPanel').classList.add('active');
+        }
+
+        function hideHistory() {
+            document.getElementById('historyPanel').classList.remove('active');
+        }
+
+        function loadFromHistory(id) {
+            const historyItem = rewriteTool.history.find(item => item.id == id);
+            if (historyItem) {
+                document.getElementById('originalText').value = historyItem.originalText;
+                document.getElementById('videoDuration').value = historyItem.videoDuration;
+                document.getElementById('rewriteCount').value = historyItem.rewriteCount;
+                document.getElementById('rewriteStyle').value = historyItem.style || '';
+                
+                rewriteTool.updateCharCount();
+                hideHistory();
+            }
+        }
+
+        function clearAll() {
+            if (confirm('确定要清空所有结果吗？')) {
+                document.getElementById('resultsList').innerHTML = '';
+                rewriteTool.resultsContainer.classList.remove('active');
+                rewriteTool.statsContainer.style.display = 'none';
+                rewriteTool.currentResults = [];
+                rewriteTool.likedResults.clear();
+            }
+        }
+
+        function toggleExport() {
+            const exportPanel = document.getElementById('exportPanel');
+            exportPanel.classList.toggle('active');
+        }
+
+        function exportResults(format) {
+            if (rewriteTool.currentResults.length === 0) {
+                alert('没有可导出的结果');
+                return;
+            }
+
+            let content = '';
+            let filename = `改写结果_${new Date().toISOString().slice(0, 10)}`;
+
+            switch (format) {
+                case 'txt':
+                    content = rewriteTool.currentResults.map((text, index) => `${index + 1}. ${text}`).join('\n\n');
+                    filename += '.txt';
+                    break;
+
+                case 'json':
+                    content = JSON.stringify({
+                        exportTime: new Date().toISOString(),
+                        results: rewriteTool.currentResults,
+                        likedIndexes: Array.from(rewriteTool.likedResults)
+                    }, null, 2);
+                    filename += '.json';
+                    break;
+
+                case 'csv':
+                    content = '序号,内容,字符数,是否喜欢\n';
+                    content += rewriteTool.currentResults.map((text, index) => 
+                        `${index + 1},"${text.replace(/"/g, '""')}",${text.length},${rewriteTool.likedResults.has(index) ? '是' : '否'}`
+                    ).join('\n');
+                    filename += '.csv';
+                    break;
+            }
+
+            // 创建下载链接
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            toggleExport();
+        }
+
+        function showHelp() {
+            alert(`📚 使用指南：
+
+1. 输入原始文案（不少于10个字符）
+2. 设置视频时长（1-3600秒）
+3. 选择改写数量（1-10个）
+4. 可选择改写风格
+5. 点击"开始改写"获取结果
+
+🔧 高级功能：
+• 点击❤️标记喜欢的文案
+• 点击✅选择最佳文案
+• 查看历史记录和重用设置
+• 导出结果为多种格式
+
+💡 提示：
+• 提供高质量原始文案获得更好效果
+• 根据实际视频时长设置参数
+• 建议生成3-5个版本进行对比`);
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            rewriteTool = new EnhancedRewriteTool();
+        });
+
+        // 页面统计信息
+        console.log(`
+        🚀 AI文案改写工具 - 增强版
+        ================================
+        • 基于FastGPT API
+        • 支持批量改写和多种风格
+        • 历史记录和导出功能
+        • 实时统计和智能分析
+        • 响应式设计和移动端优化
+        ================================
+        `);
+    </script>
+</body>
+</html>
